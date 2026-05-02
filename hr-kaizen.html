@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人事労務 業務棚卸しフォーム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a2e;
+  --ink2:#2d3561;
+  --teal:#0a8a6e;
+  --teal-light:#e6f6f3;
+  --amber:#e07b00;
+  --amber-light:#fff8ed;
+  --red:#e03e3e;
+  --sub:#6b7280;
+  --border:#e5e7eb;
+  --bg:#f8f9fb;
+  --white:#ffffff;
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:80px;}
+
+/* ヘッダー */
+.header{background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 100%);padding:40px 0 36px;text-align:center;position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+.header-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(10,138,110,0.2);border:1px solid rgba(10,138,110,0.4);color:#4dd9b8;padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1.5px;margin-bottom:18px;}
+.header h1{font-size:24px;font-weight:900;color:white;line-height:1.4;margin-bottom:10px;}
+.header p{font-size:12.5px;color:#9ca3af;line-height:1.8;}
+
+/* セーブバー */
+.save-bar{background:white;border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.save-status{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:6px;}
+.save-dot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.save-dot.unsaved{background:#f59e0b;animation:none;}
+.btn-save-clear{font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;padding:4px 10px;border-radius:6px;}
+.btn-save-clear:hover{background:#fef2f2;}
+
+/* プログレス */
+.progress-bar{background:white;padding:12px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+.progress-label{font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap;}
+.progress-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),#4dd9b8);border-radius:3px;transition:width 0.4s ease;width:0%;}
+.progress-pct{font-family:'DM Mono',monospace;font-size:12px;color:var(--teal);width:36px;text-align:right;}
+
+.main{max-width:780px;margin:0 auto;padding:28px 20px;}
+
+/* セクション */
+.section{margin-bottom:12px;}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border);}
+.section-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--ink),var(--ink2));color:white;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.section-header h2{font-size:16px;font-weight:900;color:var(--ink);}
+.section-header p{font-size:11px;color:var(--sub);margin-top:3px;}
+
+.card{background:white;border-radius:var(--radius);border:1px solid var(--border);padding:22px;margin-bottom:12px;transition:box-shadow 0.2s;}
+.card:focus-within{box-shadow:0 0 0 2px var(--teal);border-color:var(--teal);}
+
+.divider{height:1px;background:var(--border);margin:32px 0;}
+
+.q-label{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.q-required{color:var(--red);font-size:11px;}
+.q-hint{font-size:11px;color:var(--sub);margin-bottom:12px;line-height:1.7;}
+
+input[type="text"],input[type="number"],textarea,select{
+  width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 13px;
+  font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--ink);
+  background:var(--bg);transition:all 0.2s;outline:none;
+}
+input[type="text"]:focus,input[type="number"]:focus,textarea:focus,select:focus{
+  border-color:var(--teal);background:white;box-shadow:0 0 0 3px rgba(10,138,110,0.1);
+}
+textarea{resize:vertical;min-height:72px;line-height:1.7;}
+
+/* 担当者チップ */
+.member-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.member-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:2px solid var(--border);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;background:white;color:var(--sub);user-select:none;}
+.member-chip:hover{border-color:var(--teal);color:var(--teal);}
+.member-chip.active{border-color:var(--teal);background:var(--teal);color:white;}
+.member-chip .avatar{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;}
+
+/* カテゴリアコーディオン */
+.category-block{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+.category-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;background:white;transition:background 0.15s;user-select:none;}
+.category-header:hover{background:#f8f9fb;}
+.category-header.open{background:var(--teal-light);border-bottom:1px solid var(--border);}
+.cat-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0;}
+.cat-title{font-size:14px;font-weight:900;color:var(--ink);flex:1;}
+.cat-badge{font-size:11px;font-weight:700;color:var(--teal);background:var(--teal-light);padding:3px 10px;border-radius:10px;border:1px solid rgba(10,138,110,0.2);}
+.cat-badge.amber{color:var(--amber);background:var(--amber-light);border-color:rgba(224,123,0,0.2);}
+.cat-arrow{font-size:12px;color:var(--sub);transition:transform 0.2s;flex-shrink:0;}
+.cat-arrow.open{transform:rotate(180deg);}
+
+.category-body{display:none;padding:20px;background:#fcfcfc;}
+.category-body.open{display:block;}
+
+/* 割合スライダー */
+.ratio-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.ratio-label{font-size:12px;font-weight:700;color:var(--ink);width:140px;flex-shrink:0;}
+.ratio-track-wrap{flex:1;}
+input[type="range"]{width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;border:none;accent-color:var(--teal);padding:0;cursor:pointer;}
+.ratio-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--teal);width:40px;text-align:right;flex-shrink:0;}
+.ratio-total-bar{background:white;border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-top:16px;display:flex;align-items:center;gap:14px;}
+.ratio-total-label{font-size:12px;font-weight:700;color:var(--sub);}
+.ratio-total-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;}
+.ratio-total-num.ok{color:var(--teal);}
+.ratio-total-num.ng{color:var(--red);}
+.ratio-total-hint{font-size:11px;color:var(--sub);margin-left:auto;}
+
+/* 仕事カード */
+.job-card{background:white;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;position:relative;}
+.job-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.job-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--sub);width:24px;}
+.job-name-wrap{flex:1;}
+.job-del{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:18px;padding:0 4px;transition:color 0.15s;flex-shrink:0;}
+.job-del:hover{color:var(--red);}
+
+.job-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.job-field label{font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:4px;}
+.job-field input,
+.job-field select{font-size:12px;padding:8px 10px;}
+
+.job-members{margin-bottom:10px;}
+.job-members label{font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;}
+.job-member-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.jm-chip{display:inline-flex;align-items:center;padding:4px 12px;border:1.5px solid var(--border);border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all 0.15s;background:white;color:var(--sub);user-select:none;}
+.jm-chip:hover{border-color:var(--teal);color:var(--teal);}
+.jm-chip.active{border-color:var(--teal);background:var(--teal);color:white;}
+
+/* ステップ入力 */
+.steps-section{margin-top:10px;}
+.steps-section label{font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;}
+.step-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
+.step-row{display:flex;align-items:center;gap:8px;}
+.step-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--sub);width:20px;flex-shrink:0;text-align:center;}
+.step-row input{flex:1;font-size:12px;padding:7px 10px;}
+.step-del{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:15px;padding:0 4px;flex-shrink:0;transition:color 0.15s;}
+.step-del:hover{color:var(--red);}
+.add-step-btn{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--teal);background:none;border:1px dashed var(--teal);border-radius:6px;padding:5px 12px;cursor:pointer;transition:all 0.15s;}
+.add-step-btn:hover{background:var(--teal-light);}
+
+/* 追加ボタン */
+.add-job-btn{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--teal-light);color:var(--teal);border:1.5px dashed var(--teal);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;width:100%;justify-content:center;margin-top:4px;}
+.add-job-btn:hover{background:var(--teal);color:white;}
+
+/* プリセット */
+.preset-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.preset-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:11.5px;cursor:pointer;background:white;color:var(--sub);transition:all 0.15s;}
+.preset-chip:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-light);}
+.preset-chip.used{opacity:0.35;cursor:default;pointer-events:none;}
+.preset-label{font-size:11px;font-weight:700;color:var(--sub);margin-bottom:6px;}
+
+/* 送信 */
+.submit-area{text-align:center;padding:24px 0;}
+.btn-submit{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--teal),#067a5e);color:white;border:none;padding:16px 48px;border-radius:12px;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 18px rgba(10,138,110,0.3);}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(10,138,110,0.4);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+/* 完了 */
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.success{display:none;text-align:center;padding:80px 24px;}
+.success.show{display:block;animation:fadeIn 0.5s ease;}
+.success-icon{font-size:64px;margin-bottom:24px;}
+.success h2{font-size:22px;font-weight:900;color:var(--ink);margin-bottom:12px;}
+.success p{font-size:13px;color:var(--sub);line-height:1.9;}
+
+.note-box{background:var(--amber-light);border:1px solid rgba(224,123,0,0.2);border-left:3px solid var(--amber);border-radius:8px;padding:12px 14px;font-size:11.5px;color:#7c4a00;line-height:1.7;margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">🏢 HR DEPARTMENT</div>
+  <h1>人事労務部 業務棚卸しフォーム</h1>
+  <p>部門全体の業務・時間・担当・フローを可視化するためのフォームです<br>平山部長・石橋Mgr・奥田さん・小沼さんで一緒に記入してください</p>
+</div>
+
+<div class="save-bar">
+  <div class="save-status">
+    <div class="save-dot" id="saveDot"></div>
+    <span id="saveStatusText">自動保存済み</span>
+  </div>
+  <button class="btn-save-clear" onclick="clearSave()">保存データをリセット</button>
+</div>
+
+<div class="progress-bar">
+  <span class="progress-label">入力状況</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+</div>
+
+<div class="main" id="formArea">
+
+  <!-- S1: 基本情報 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <div><h2>基本情報</h2><p>記入日と記入者を教えてください</p></div>
+    </div>
+    <div class="card">
+      <div class="q-label">記入日 <span class="q-required">必須</span></div>
+      <input type="text" id="q_date" placeholder="例：2025年6月10日" oninput="onInput()">
+    </div>
+    <div class="card">
+      <div class="q-label">記入参加者 <span class="q-required">必須</span></div>
+      <div class="q-hint">本日この場にいるメンバーを選んでください（複数可）</div>
+      <div class="member-chips" id="participants">
+        <div class="member-chip" onclick="toggleMember(this,'平山部長')"><div class="avatar">平</div>平山部長</div>
+        <div class="member-chip" onclick="toggleMember(this,'石橋Mgr')"><div class="avatar">石</div>石橋Mgr</div>
+        <div class="member-chip" onclick="toggleMember(this,'奥田')"><div class="avatar">奥</div>奥田</div>
+        <div class="member-chip" onclick="toggleMember(this,'小沼')"><div class="avatar">小</div>小沼</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- S2: 部門全体の時間配分 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⏱️</div>
+      <div><h2>部門全体の時間配分（大枠）</h2><p>部門全体として各カテゴリに使っている時間の割合を設定してください（合計100%）</p></div>
+    </div>
+    <div class="card">
+      <div class="q-hint">各カテゴリの割合をスライダーで設定してください。合計が100%になるように調整してください。</div>
+
+      <div id="ratio-sliders">
+        <div class="ratio-row"><span class="ratio-label">📂 入退社系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="20" id="r0" oninput="updateRatio()"></div><span class="ratio-val" id="rv0">20%</span></div>
+        <div class="ratio-row"><span class="ratio-label">💴 給与・社会保険系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="25" id="r1" oninput="updateRatio()"></div><span class="ratio-val" id="rv1">25%</span></div>
+        <div class="ratio-row"><span class="ratio-label">📝 申請系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="15" id="r2" oninput="updateRatio()"></div><span class="ratio-val" id="rv2">15%</span></div>
+        <div class="ratio-row"><span class="ratio-label">🔍 採用系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="20" id="r3" oninput="updateRatio()"></div><span class="ratio-val" id="rv3">20%</span></div>
+        <div class="ratio-row"><span class="ratio-label">🏢 総務系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="10" id="r4" oninput="updateRatio()"></div><span class="ratio-val" id="rv4">10%</span></div>
+        <div class="ratio-row"><span class="ratio-label">📜 規程・IPO系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="10" id="r5" oninput="updateRatio()"></div><span class="ratio-val" id="rv5">10%</span></div>
+        <div class="ratio-row"><span class="ratio-label">🗂️ その他</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="0" id="r6" oninput="updateRatio()"></div><span class="ratio-val" id="rv6">0%</span></div>
+      </div>
+
+      <div class="ratio-total-bar">
+        <span class="ratio-total-label">合計</span>
+        <span class="ratio-total-num ok" id="ratioTotal">100%</span>
+        <span class="ratio-total-hint" id="ratioHint">✅ 100%になっています</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- S3: 各カテゴリの詳細 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔍</div>
+      <div><h2>各カテゴリの仕事詳細</h2><p>各カテゴリを開いて、仕事ごとに担当・件数・ステップを入力してください</p></div>
+    </div>
+
+    <div class="note-box">💡 プリセット（候補）から追加するか、「＋ 仕事を追加」で自由に入力できます。全カテゴリを埋める必要はありません。</div>
+
+    <!-- カテゴリ1: 入退社系 -->
+    <div class="category-block" id="cat-0">
+      <div class="category-header" onclick="toggleCat(0)">
+        <span class="cat-icon">📂</span>
+        <span class="cat-title">入退社系</span>
+        <span class="cat-badge" id="cat-badge-0">0件</span>
+        <span class="cat-arrow" id="cat-arrow-0">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-0">
+        <div class="preset-label">▼ プリセットから追加</div>
+        <div class="preset-chips" id="preset-0">
+          <div class="preset-chip" onclick="addPreset(0,this,'入社書類の回収・確認')">＋ 入社書類の回収・確認</div>
+          <div class="preset-chip" onclick="addPreset(0,this,'雇用保険・社保 資格取得手続き')">＋ 雇用保険・社保 資格取得手続き</div>
+          <div class="preset-chip" onclick="addPreset(0,this,'freeeへの情報登録')">＋ freeeへの情報登録</div>
+          <div class="preset-chip" onclick="addPreset(0,this,'書類の郵送・倉庫保管')">＋ 書類の郵送・倉庫保管</div>
+          <div class="preset-chip" onclick="addPreset(0,this,'退社手続き（保険喪失・freee）')">＋ 退社手続き（保険喪失・freee）</div>
+          <div class="preset-chip" onclick="addPreset(0,this,'源泉徴収票の発行')">＋ 源泉徴収票の発行</div>
+          <div class="preset-chip" onclick="addPreset(0,this,'雇用契約書の作成・締結')">＋ 雇用契約書の作成・締結</div>
+        </div>
+        <div class="job-list" id="jobs-0"></div>
+        <div class="add-job-btn" onclick="addJob(0)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ2: 給与・社会保険系 -->
+    <div class="category-block" id="cat-1">
+      <div class="category-header" onclick="toggleCat(1)">
+        <span class="cat-icon">💴</span>
+        <span class="cat-title">給与・社会保険系</span>
+        <span class="cat-badge" id="cat-badge-1">0件</span>
+        <span class="cat-arrow" id="cat-arrow-1">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-1">
+        <div class="preset-label">▼ プリセットから追加</div>
+        <div class="preset-chips" id="preset-1">
+          <div class="preset-chip" onclick="addPreset(1,this,'給与計算')">＋ 給与計算</div>
+          <div class="preset-chip" onclick="addPreset(1,this,'社保月次手続き（算定・月変）')">＋ 社保月次手続き（算定・月変）</div>
+          <div class="preset-chip" onclick="addPreset(1,this,'住民税の対応（特徴・普徴）')">＋ 住民税の対応（特徴・普徴）</div>
+          <div class="preset-chip" onclick="addPreset(1,this,'年末調整')">＋ 年末調整</div>
+          <div class="preset-chip" onclick="addPreset(1,this,'賞与計算・手続き')">＋ 賞与計算・手続き</div>
+          <div class="preset-chip" onclick="addPreset(1,this,'給与明細の発行・配布')">＋ 給与明細の発行・配布</div>
+          <div class="preset-chip" onclick="addPreset(1,this,'freeeへの仕訳・連携確認')">＋ freeeへの仕訳・連携確認</div>
+        </div>
+        <div class="job-list" id="jobs-1"></div>
+        <div class="add-job-btn" onclick="addJob(1)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ3: 申請系 -->
+    <div class="category-block" id="cat-2">
+      <div class="category-header" onclick="toggleCat(2)">
+        <span class="cat-icon">📝</span>
+        <span class="cat-title">申請系</span>
+        <span class="cat-badge" id="cat-badge-2">0件</span>
+        <span class="cat-arrow" id="cat-arrow-2">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-2">
+        <div class="preset-label">▼ プリセットから追加</div>
+        <div class="preset-chips" id="preset-2">
+          <div class="preset-chip" onclick="addPreset(2,this,'有休申請の受付・処理')">＋ 有休申請の受付・処理</div>
+          <div class="preset-chip" onclick="addPreset(2,this,'交通費精算')">＋ 交通費精算</div>
+          <div class="preset-chip" onclick="addPreset(2,this,'育休・産休手続き')">＋ 育休・産休手続き</div>
+          <div class="preset-chip" onclick="addPreset(2,this,'各種証明書の発行（在籍・収入）')">＋ 各種証明書の発行（在籍・収入）</div>
+          <div class="preset-chip" onclick="addPreset(2,this,'異動・昇格の手続き')">＋ 異動・昇格の手続き</div>
+          <div class="preset-chip" onclick="addPreset(2,this,'慶弔対応')">＋ 慶弔対応</div>
+        </div>
+        <div class="job-list" id="jobs-2"></div>
+        <div class="add-job-btn" onclick="addJob(2)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ4: 採用系 -->
+    <div class="category-block" id="cat-3">
+      <div class="category-header" onclick="toggleCat(3)">
+        <span class="cat-icon">🔍</span>
+        <span class="cat-title">採用系</span>
+        <span class="cat-badge" id="cat-badge-3">0件</span>
+        <span class="cat-arrow" id="cat-arrow-3">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-3">
+        <div class="preset-label">▼ プリセットから追加</div>
+        <div class="preset-chips" id="preset-3">
+          <div class="preset-chip" onclick="addPreset(3,this,'求人媒体の管理・更新')">＋ 求人媒体の管理・更新</div>
+          <div class="preset-chip" onclick="addPreset(3,this,'応募者対応・面接調整')">＋ 応募者対応・面接調整</div>
+          <div class="preset-chip" onclick="addPreset(3,this,'面接実施・評価')">＋ 面接実施・評価</div>
+          <div class="preset-chip" onclick="addPreset(3,this,'内定手続き・オファー対応')">＋ 内定手続き・オファー対応</div>
+          <div class="preset-chip" onclick="addPreset(3,this,'採用データの管理・集計')">＋ 採用データの管理・集計</div>
+          <div class="preset-chip" onclick="addPreset(3,this,'エージェント対応')">＋ エージェント対応</div>
+        </div>
+        <div class="job-list" id="jobs-3"></div>
+        <div class="add-job-btn" onclick="addJob(3)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ5: 総務系 -->
+    <div class="category-block" id="cat-4">
+      <div class="category-header" onclick="toggleCat(4)">
+        <span class="cat-icon">🏢</span>
+        <span class="cat-title">総務系</span>
+        <span class="cat-badge" id="cat-badge-4">0件</span>
+        <span class="cat-arrow" id="cat-arrow-4">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-4">
+        <div class="preset-label">▼ プリセットから追加</div>
+        <div class="preset-chips" id="preset-4">
+          <div class="preset-chip" onclick="addPreset(4,this,'車両管理（点検・保険・台帳）')">＋ 車両管理（点検・保険・台帳）</div>
+          <div class="preset-chip" onclick="addPreset(4,this,'備品管理（発注・棚卸し）')">＋ 備品管理（発注・棚卸し）</div>
+          <div class="preset-chip" onclick="addPreset(4,this,'郵便物の受取・仕分け・発送')">＋ 郵便物の受取・仕分け・発送</div>
+          <div class="preset-chip" onclick="addPreset(4,this,'名古屋支社の総務対応')">＋ 名古屋支社の総務対応</div>
+          <div class="preset-chip" onclick="addPreset(4,this,'東京本社の総務対応')">＋ 東京本社の総務対応</div>
+          <div class="preset-chip" onclick="addPreset(4,this,'契約書・書類の管理')">＋ 契約書・書類の管理</div>
+        </div>
+        <div class="job-list" id="jobs-4"></div>
+        <div class="add-job-btn" onclick="addJob(4)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ6: 規程・IPO系 -->
+    <div class="category-block" id="cat-5">
+      <div class="category-header" onclick="toggleCat(5)">
+        <span class="cat-icon">📜</span>
+        <span class="cat-title">規程・IPO系</span>
+        <span class="cat-badge" id="cat-badge-5">0件</span>
+        <span class="cat-arrow" id="cat-arrow-5">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-5">
+        <div class="preset-label">▼ プリセットから追加</div>
+        <div class="preset-chips" id="preset-5">
+          <div class="preset-chip" onclick="addPreset(5,this,'就業規則の整備・改定')">＋ 就業規則の整備・改定</div>
+          <div class="preset-chip" onclick="addPreset(5,this,'各種規程の作成・メンテナンス')">＋ 各種規程の作成・メンテナンス</div>
+          <div class="preset-chip" onclick="addPreset(5,this,'IPO対応・労務監査対応')">＋ IPO対応・労務監査対応</div>
+          <div class="preset-chip" onclick="addPreset(5,this,'内部統制の整備・確認')">＋ 内部統制の整備・確認</div>
+          <div class="preset-chip" onclick="addPreset(5,this,'36協定の締結・届出')">＋ 36協定の締結・届出</div>
+          <div class="preset-chip" onclick="addPreset(5,this,'ハラスメント相談対応・規程')">＋ ハラスメント相談対応・規程</div>
+        </div>
+        <div class="job-list" id="jobs-5"></div>
+        <div class="add-job-btn" onclick="addJob(5)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ7: その他 -->
+    <div class="category-block" id="cat-6">
+      <div class="category-header" onclick="toggleCat(6)">
+        <span class="cat-icon">🗂️</span>
+        <span class="cat-title">その他</span>
+        <span class="cat-badge amber" id="cat-badge-6">0件</span>
+        <span class="cat-arrow" id="cat-arrow-6">▼</span>
+      </div>
+      <div class="category-body" id="cat-body-6">
+        <div class="q-hint">上記カテゴリに当てはまらない業務を自由に追加してください。</div>
+        <div class="job-list" id="jobs-6"></div>
+        <div class="add-job-btn" onclick="addJob(6)">＋ 仕事を追加</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- S4: 全体コメント -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💬</div>
+      <div><h2>全体コメント・気づき</h2><p>記入を通じて気づいたこと、感じた課題など自由に</p></div>
+    </div>
+    <div class="card">
+      <div class="q-label">特に非効率だと感じている業務・課題</div>
+      <textarea id="q_inefficiency" placeholder="例：入社書類の紙対応に毎回2時間以上かかっている。freeeに手入力しているので転記ミスが起きやすい。など" oninput="onInput()"></textarea>
+    </div>
+    <div class="card">
+      <div class="q-label">優先的にデジタル化・改善したい業務</div>
+      <textarea id="q_priority" placeholder="例：入社手続きをfreeeのオンライン機能に移行したい、申請をすべてシステム化したい など" oninput="onInput()"></textarea>
+    </div>
+    <div class="card">
+      <div class="q-label">その他・備考</div>
+      <textarea id="q_notes" placeholder="何でも自由に" oninput="onInput()"></textarea>
+    </div>
+  </div>
+
+  <div class="submit-area">
+    <button class="btn-submit" id="submitBtn" onclick="submitForm()">📤 送信する</button>
+    <p style="font-size:11px;color:var(--sub);margin-top:12px;">送信後、Slackに通知が届きます。回答はSupabaseに保存されます。</p>
+  </div>
+
+  <div class="success" id="successArea">
+    <div class="success-icon">✅</div>
+    <h2>送信完了しました！</h2>
+    <p>お疲れ様でした。<br>Slackに通知が届いています。<br>回答内容はSupabaseに保存されました。</p>
+  </div>
+
+</div>
+
+<script>
+const MEMBERS = ['平山部長','石橋Mgr','奥田','小沼'];
+const SAVE_KEY = 'hr_kaizen_form_v1';
+let saveTimer = null;
+
+// ========== 一時保存 ==========
+function markUnsaved() {
+  document.getElementById('saveDot').classList.add('unsaved');
+  document.getElementById('saveStatusText').textContent = '未保存の変更があります';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(autoSave, 1500);
+}
+
+function autoSave() {
+  const state = collectState();
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    document.getElementById('saveDot').classList.remove('unsaved');
+    document.getElementById('saveStatusText').textContent = '自動保存済み — ' + new Date().toLocaleTimeString('ja-JP');
+  } catch(e) {}
+}
+
+function clearSave() {
+  if (!confirm('保存データをリセットしますか？入力内容がすべて消えます。')) return;
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+
+function collectState() {
+  const jobs = [];
+  for (let i = 0; i < 7; i++) {
+    const list = document.getElementById('jobs-' + i);
+    if (!list) continue;
+    list.querySelectorAll('.job-card').forEach(card => {
+      jobs.push({
+        cat: i,
+        name: card.querySelector('.job-name-input')?.value || '',
+        members: Array.from(card.querySelectorAll('.jm-chip.active')).map(c => c.dataset.member),
+        count: card.querySelector('.job-count')?.value || '',
+        time: card.querySelector('.job-time')?.value || '',
+        steps: Array.from(card.querySelectorAll('.step-input')).map(s => s.value)
+      });
+    });
+  }
+  return {
+    date: document.getElementById('q_date')?.value,
+    participants: Array.from(document.querySelectorAll('#participants .member-chip.active')).map(c => c.dataset.member),
+    ratios: [0,1,2,3,4,5,6].map(i => document.getElementById('r'+i)?.value),
+    jobs,
+    inefficiency: document.getElementById('q_inefficiency')?.value,
+    priority: document.getElementById('q_priority')?.value,
+    notes: document.getElementById('q_notes')?.value,
+  };
+}
+
+function restoreState(state) {
+  if (!state) return;
+  if (state.date) document.getElementById('q_date').value = state.date;
+  if (state.participants) {
+    state.participants.forEach(m => {
+      const chip = document.querySelector(`#participants .member-chip[data-member="${m}"]`);
+      if (chip) chip.classList.add('active');
+    });
+  }
+  if (state.ratios) {
+    state.ratios.forEach((v, i) => {
+      const el = document.getElementById('r'+i);
+      if (el) { el.value = v; document.getElementById('rv'+i).textContent = v + '%'; }
+    });
+    updateRatio();
+  }
+  if (state.jobs) {
+    state.jobs.forEach(j => {
+      addJob(j.cat, j.name, j.members, j.count, j.time, j.steps);
+    });
+  }
+  if (state.inefficiency) document.getElementById('q_inefficiency').value = state.inefficiency;
+  if (state.priority) document.getElementById('q_priority').value = state.priority;
+  if (state.notes) document.getElementById('q_notes').value = state.notes;
+}
+
+// ========== 部門メンバー選択 ==========
+function toggleMember(el, name) {
+  el.classList.toggle('active');
+  el.dataset.member = name;
+  onInput();
+}
+
+// ========== 割合スライダー ==========
+function updateRatio() {
+  let total = 0;
+  for (let i = 0; i < 7; i++) {
+    const v = parseInt(document.getElementById('r'+i)?.value || 0);
+    document.getElementById('rv'+i).textContent = v + '%';
+    total += v;
+  }
+  const el = document.getElementById('ratioTotal');
+  const hint = document.getElementById('ratioHint');
+  el.textContent = total + '%';
+  if (total === 100) {
+    el.className = 'ratio-total-num ok';
+    hint.textContent = '✅ 100%になっています';
+  } else if (total < 100) {
+    el.className = 'ratio-total-num ng';
+    hint.textContent = `あと ${100 - total}% 割り当てが必要です`;
+  } else {
+    el.className = 'ratio-total-num ng';
+    hint.textContent = `${total - 100}% オーバーしています`;
+  }
+  onInput();
+}
+
+// ========== カテゴリアコーディオン ==========
+function toggleCat(idx) {
+  const body = document.getElementById('cat-body-'+idx);
+  const arrow = document.getElementById('cat-arrow-'+idx);
+  const header = document.querySelector('#cat-'+idx+' .category-header');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+// ========== 仕事カード ==========
+let jobCounters = [0,0,0,0,0,0,0];
+
+function addJob(catIdx, name='', members=[], count='', time='', steps=[]) {
+  const list = document.getElementById('jobs-'+catIdx);
+  const num = ++jobCounters[catIdx];
+  const card = document.createElement('div');
+  card.className = 'job-card';
+  card.innerHTML = `
+    <div class="job-card-header">
+      <span class="job-num">${String(num).padStart(2,'0')}</span>
+      <div class="job-name-wrap">
+        <input type="text" class="job-name-input" placeholder="仕事名を入力" value="${escHtml(name)}" oninput="onInput()">
+      </div>
+      <button class="job-del" onclick="delJob(this, ${catIdx})">×</button>
+    </div>
+    <div class="job-members">
+      <label>担当者（複数可）</label>
+      <div class="job-member-chips">
+        ${MEMBERS.map(m => `<div class="jm-chip${members.includes(m)?' active':''}" data-member="${m}" onclick="toggleJmChip(this)">${m}</div>`).join('')}
+      </div>
+    </div>
+    <div class="job-grid">
+      <div class="job-field">
+        <label>月あたり件数</label>
+        <input type="number" class="job-count" placeholder="例：15" min="0" value="${escHtml(count)}" oninput="onInput()">
+      </div>
+      <div class="job-field">
+        <label>1件あたり所要時間（分）</label>
+        <input type="number" class="job-time" placeholder="例：30" min="0" value="${escHtml(time)}" oninput="onInput()">
+      </div>
+    </div>
+    <div class="steps-section">
+      <label>業務ステップ（完了条件まで）</label>
+      <div class="step-list">
+        ${steps.length ? steps.map((s,i) => stepRowHtml(i+1, s)).join('') : stepRowHtml(1,'')}
+      </div>
+      <button class="add-step-btn" onclick="addStep(this)">＋ ステップを追加</button>
+    </div>
+  `;
+  list.appendChild(card);
+  updateCatBadge(catIdx);
+  if (!document.getElementById('cat-body-'+catIdx).classList.contains('open')) {
+    toggleCat(catIdx);
+  }
+  onInput();
+  return card;
+}
+
+function stepRowHtml(num, val='') {
+  return `<div class="step-row">
+    <span class="step-num">${num}</span>
+    <input type="text" class="step-input" placeholder="ステップ内容を入力（例：書類を受け取る）" value="${escHtml(val)}" oninput="onInput()">
+    <button class="step-del" onclick="delStep(this)">×</button>
+  </div>`;
+}
+
+function addStep(btn) {
+  const stepList = btn.previousElementSibling;
+  const num = stepList.querySelectorAll('.step-row').length + 1;
+  stepList.insertAdjacentHTML('beforeend', stepRowHtml(num));
+  onInput();
+}
+
+function delStep(btn) {
+  const row = btn.closest('.step-row');
+  const list = row.closest('.step-list');
+  if (list.querySelectorAll('.step-row').length > 1) {
+    row.remove();
+    // 番号振り直し
+    list.querySelectorAll('.step-num').forEach((el, i) => el.textContent = i + 1);
+  }
+  onInput();
+}
+
+function delJob(btn, catIdx) {
+  btn.closest('.job-card').remove();
+  updateCatBadge(catIdx);
+  onInput();
+}
+
+function toggleJmChip(el) {
+  el.classList.toggle('active');
+  onInput();
+}
+
+function updateCatBadge(catIdx) {
+  const count = document.getElementById('jobs-'+catIdx).querySelectorAll('.job-card').length;
+  document.getElementById('cat-badge-'+catIdx).textContent = count + '件';
+}
+
+// ========== プリセット ==========
+function addPreset(catIdx, chip, jobName) {
+  chip.classList.add('used');
+  addJob(catIdx, jobName);
+}
+
+// ========== プログレス ==========
+function onInput() {
+  updateProgress();
+  markUnsaved();
+}
+
+function updateProgress() {
+  const date = document.getElementById('q_date')?.value.trim();
+  const participants = document.querySelectorAll('#participants .member-chip.active').length;
+  const total = parseInt(document.getElementById('ratioTotal')?.textContent) || 0;
+  const jobs = document.querySelectorAll('.job-card').length;
+
+  const filled = [date, participants > 0, total === 100, jobs > 0].filter(Boolean).length;
+  const pct = Math.round((filled / 4) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ========== 送信 ==========
+function formatJobs() {
+  const result = [];
+  const catNames = ['入退社系','給与・社会保険系','申請系','採用系','総務系','規程・IPO系','その他'];
+  for (let i = 0; i < 7; i++) {
+    const list = document.getElementById('jobs-'+i);
+    if (!list) continue;
+    const cards = list.querySelectorAll('.job-card');
+    if (cards.length === 0) continue;
+    result.push(`\n【${catNames[i]}】`);
+    cards.forEach((card, idx) => {
+      const name = card.querySelector('.job-name-input')?.value || '（未入力）';
+      const members = Array.from(card.querySelectorAll('.jm-chip.active')).map(c=>c.dataset.member).join('・') || '未設定';
+      const count = card.querySelector('.job-count')?.value || '-';
+      const time = card.querySelector('.job-time')?.value || '-';
+      const steps = Array.from(card.querySelectorAll('.step-input')).map((s,i)=>`  ${i+1}. ${s.value||'（未入力）'}`).join('\n');
+      result.push(`${idx+1}. ${name}\n  担当：${members} / 月${count}件 / 1件${time}分\n  ステップ：\n${steps}`);
+    });
+  }
+  return result.join('\n');
+}
+
+function getRatioSummary() {
+  const names = ['入退社系','給与・社会保険系','申請系','採用系','総務系','規程・IPO系','その他'];
+  return names.map((n,i) => `${n}：${document.getElementById('r'+i)?.value||0}%`).join(' / ');
+}
+
+async function submitForm() {
+  const date = document.getElementById('q_date')?.value.trim();
+  const participants = Array.from(document.querySelectorAll('#participants .member-chip.active')).map(c=>c.dataset.member);
+  if (!date) { alert('記入日をご入力ください。'); return; }
+  if (participants.length === 0) { alert('記入参加者を選択してください。'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+
+  const data = {
+    form_name: '人事労務業務棚卸しv1',
+    date,
+    participants: participants.join('・'),
+    ratio_summary: getRatioSummary(),
+    jobs_detail: formatJobs(),
+    inefficiency: document.getElementById('q_inefficiency')?.value || '',
+    priority: document.getElementById('q_priority')?.value || '',
+    notes: document.getElementById('q_notes')?.value || '',
+  };
+
+  try {
+    const res = await fetch('/api/hr-submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'エラー');
+
+    localStorage.removeItem(SAVE_KEY);
+    document.getElementById('submitBtn').style.display = 'none';
+    document.querySelector('.submit-area p').style.display = 'none';
+    const success = document.getElementById('successArea');
+    success.classList.add('show');
+    success.scrollIntoView({ behavior: 'smooth' });
+  } catch(e) {
+    alert('送信中にエラーが発生しました: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '📤 送信する';
+  }
+}
+
+// ========== ユーティリティ ==========
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ========== 初期化 ==========
+document.addEventListener('DOMContentLoaded', () => {
+  // member chipにdata-member付与
+  document.querySelectorAll('#participants .member-chip').forEach((chip, i) => {
+    chip.dataset.member = ['平山部長','石橋Mgr','奥田','小沼'][i];
+  });
+
+  // localStorageから復元
+  try {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) {
+      const state = JSON.parse(saved);
+      restoreState(state);
+      document.getElementById('saveStatusText').textContent = '前回の入力を復元しました';
+    }
+  } catch(e) {}
+
+  updateRatio();
+  updateProgress();
+});
+</script>
+</body>
+</html>
