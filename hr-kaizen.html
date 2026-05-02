@@ -96,12 +96,17 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
 .category-body{display:none;padding:20px;background:#fcfcfc;}
 .category-body.open{display:block;}
 
-/* 割合スライダー */
-.ratio-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
-.ratio-label{font-size:12px;font-weight:700;color:var(--ink);width:140px;flex-shrink:0;}
-.ratio-track-wrap{flex:1;}
-input[type="range"]{width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;border:none;accent-color:var(--teal);padding:0;cursor:pointer;}
-.ratio-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--teal);width:40px;text-align:right;flex-shrink:0;}
+/* 割合入力グリッド */
+.ratio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:600px){.ratio-grid{grid-template-columns:repeat(2,1fr);}}
+.ratio-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;transition:border-color 0.2s;}
+.ratio-item:focus-within{border-color:var(--teal);background:white;}
+.ratio-item-label{font-size:11px;font-weight:700;color:var(--ink);}
+.ratio-item-input-wrap{display:flex;align-items:center;gap:4px;}
+.ratio-item-num{width:56px!important;font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--teal);text-align:center;padding:4px 6px!important;border-radius:6px;background:white;}
+.ratio-item-pct{font-size:13px;font-weight:700;color:var(--sub);}
+.ratio-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
+.ratio-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),#4dd9b8);border-radius:2px;transition:width 0.3s;}
 .ratio-total-bar{background:white;border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-top:16px;display:flex;align-items:center;gap:14px;}
 .ratio-total-label{font-size:12px;font-weight:700;color:var(--sub);}
 .ratio-total-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;}
@@ -226,14 +231,14 @@ input[type="range"]{width:100%;height:4px;border-radius:2px;background:var(--bor
     <div class="card">
       <div class="q-hint">各カテゴリの割合をスライダーで設定してください。合計が100%になるように調整してください。</div>
 
-      <div id="ratio-sliders">
-        <div class="ratio-row"><span class="ratio-label">📂 入退社系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="20" id="r0" oninput="updateRatio()"></div><span class="ratio-val" id="rv0">20%</span></div>
-        <div class="ratio-row"><span class="ratio-label">💴 給与・社会保険系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="25" id="r1" oninput="updateRatio()"></div><span class="ratio-val" id="rv1">25%</span></div>
-        <div class="ratio-row"><span class="ratio-label">📝 申請系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="15" id="r2" oninput="updateRatio()"></div><span class="ratio-val" id="rv2">15%</span></div>
-        <div class="ratio-row"><span class="ratio-label">🔍 採用系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="20" id="r3" oninput="updateRatio()"></div><span class="ratio-val" id="rv3">20%</span></div>
-        <div class="ratio-row"><span class="ratio-label">🏢 総務系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="10" id="r4" oninput="updateRatio()"></div><span class="ratio-val" id="rv4">10%</span></div>
-        <div class="ratio-row"><span class="ratio-label">📜 規程・IPO系</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="10" id="r5" oninput="updateRatio()"></div><span class="ratio-val" id="rv5">10%</span></div>
-        <div class="ratio-row"><span class="ratio-label">🗂️ その他</span><div class="ratio-track-wrap"><input type="range" min="0" max="100" value="0" id="r6" oninput="updateRatio()"></div><span class="ratio-val" id="rv6">0%</span></div>
+      <div class="ratio-grid" id="ratio-sliders">
+        <div class="ratio-item"><div class="ratio-item-label">📂 入退社系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r0" min="0" max="100" value="20" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb0" style="width:20%"></div></div></div>
+        <div class="ratio-item"><div class="ratio-item-label">💴 給与・社保系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r1" min="0" max="100" value="25" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb1" style="width:25%"></div></div></div>
+        <div class="ratio-item"><div class="ratio-item-label">📝 申請系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r2" min="0" max="100" value="15" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb2" style="width:15%"></div></div></div>
+        <div class="ratio-item"><div class="ratio-item-label">🔍 採用系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r3" min="0" max="100" value="20" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb3" style="width:20%"></div></div></div>
+        <div class="ratio-item"><div class="ratio-item-label">🏢 総務系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r4" min="0" max="100" value="10" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb4" style="width:10%"></div></div></div>
+        <div class="ratio-item"><div class="ratio-item-label">📜 規程・IPO系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r5" min="0" max="100" value="10" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb5" style="width:10%"></div></div></div>
+        <div class="ratio-item"><div class="ratio-item-label">🗂️ その他</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r6" min="0" max="100" value="0" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb6" style="width:0%"></div></div></div>
       </div>
 
       <div class="ratio-total-bar">
@@ -539,9 +544,10 @@ function toggleMember(el, name) {
 function updateRatio() {
   let total = 0;
   for (let i = 0; i < 7; i++) {
-    const v = parseInt(document.getElementById('r'+i)?.value || 0);
-    document.getElementById('rv'+i).textContent = v + '%';
+    const v = Math.max(0, Math.min(100, parseInt(document.getElementById('r'+i)?.value || 0)));
     total += v;
+    const bar = document.getElementById('rb'+i);
+    if (bar) bar.style.width = v + '%';
   }
   const el = document.getElementById('ratioTotal');
   const hint = document.getElementById('ratioHint');
