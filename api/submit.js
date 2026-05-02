@@ -8,12 +8,7 @@ export default async function handler(req, res) {
 
   const SUPABASE_URL = 'https://lzknpgcqrkaehofvzfja.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6a25wZ2NxcmthZWhvZnZ6ZmphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2ODA1NjIsImV4cCI6MjA5MzI1NjU2Mn0.MjhNgnMJeRB__73rWvxkC-p-0V3phhUrVTAzhloRX8s';
-
-  const SLACK_WEBHOOKS = {
-    'team_部門責任者gr': 'https://hooks.slack.com/services/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',
-    'team_事業部部門責任者gr': 'https://hooks.slack.com/services/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',
-    'team_社長室_mgmt': 'https://hooks.slack.com/services/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'
-  };
+  const SLACK_WEBHOOK = 'https://hooks.slack.com/services/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';
 
   try {
     const data = req.body;
@@ -35,19 +30,17 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Supabase error', detail: err });
     }
 
-    // Slack通知
-    const webhookUrl = SLACK_WEBHOOKS[data.slack_channel];
-    if (webhookUrl) {
-      const slackRes = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: `📋 *新しいヒアリング回答が届きました*\n*回答者：* ${data.name}（${data.dept || '未入力'}）\n*対象職種：* ${data.industry || '未入力'}\n*面接ゴール：* ${data.goal || '未入力'}\n*対象言語：* ${data.languages || '未入力'}\n*現在の課題：* ${data.pain_points || 'なし'}`
-        })
-      });
-      const slackBody = await slackRes.text();
-      console.log('Slack status:', slackRes.status, slackBody);
-    }
+    // Slack DM通知
+    const slackRes = await fetch(SLACK_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: `📋 *新しいヒアリング回答が届きました*\n*回答者：* ${data.name}（${data.dept || '未入力'}）\n*対象職種：* ${data.industry || '未入力'}\n*面接ゴール：* ${data.goal || '未入力'}\n*対象言語：* ${data.languages || '未入力'}\n*現在の課題：* ${data.pain_points || 'なし'}`
+      })
+    });
+
+    const slackBody = await slackRes.text();
+    console.log('Slack status:', slackRes.status, slackBody);
 
     return res.status(200).json({ success: true });
 
