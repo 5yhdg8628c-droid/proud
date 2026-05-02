@@ -32,31 +32,24 @@ export default async function handler(req, res) {
 
     if (!sbRes.ok) {
       const err = await sbRes.text();
-      console.error('Supabase error:', err);
       return res.status(500).json({ error: 'Supabase error', detail: err });
     }
 
     // Slack通知
     const webhookUrl = SLACK_WEBHOOKS[data.slack_channel];
     if (webhookUrl) {
-      await fetch(webhookUrl, {
+      const slackRes = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          blocks: [
-            { type: 'header', text: { type: 'plain_text', text: '📋 新しいヒアリング回答が届きました' } },
-            { type: 'section', fields: [
-              { type: 'mrkdwn', text: `*回答者：*\n${data.name}（${data.dept || '未入力'}）` },
-              { type: 'mrkdwn', text: `*対象職種：*\n${data.industry || '未入力'}` },
-              { type: 'mrkdwn', text: `*面接ゴール：*\n${data.goal || '未入力'}` },
-              { type: 'mrkdwn', text: `*対象言語：*\n${data.languages || '未入力'}` },
-            ]},
-            { type: 'section', text: { type: 'mrkdwn', text: `*現在の課題：*\n${data.pain_points || 'なし'}` }},
-            { type: 'divider' },
-            { type: 'section', text: { type: 'mrkdwn', text: `🔗 <https://supabase.com/dashboard/project/lzknpgcqrkaehofvzfja/editor|Supabaseで全回答を確認>` }}
-          ]
+          text: `📋 新しいヒアリング回答が届きました\n*回答者：* ${data.name}（${data.dept || '未入力'}）\n*対象職種：* ${data.industry || '未入力'}\n*面接ゴール：* ${data.goal || '未入力'}\n*対象言語：* ${data.languages || '未入力'}\n*現在の課題：* ${data.pain_points || 'なし'}\n🔗 Supabaseで確認: https://supabase.com/dashboard/project/lzknpgcqrkaehofvzfja/editor`
         })
       });
+      
+      if (!slackRes.ok) {
+        const slackErr = await slackRes.text();
+        console.error('Slack error:', slackErr);
+      }
     }
 
     return res.status(200).json({ success: true });
