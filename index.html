@@ -88,16 +88,7 @@
       <div class="q-label">部署・役職</div>
       <input type="text" placeholder="例：募集部 マネージャー" id="q_dept">
     </div>
-    <div class="card">
-      <div class="q-label">通知先Slackチャンネル <span class="q-required">必須</span></div>
-      <div class="q-hint">回答完了時に通知を送るチャンネルを選んでください</div>
-      <select id="q_slack_channel" onchange="updateProgress()">
-        <option value="">選択してください</option>
-        <option value="team_部門責任者gr">team_部門責任者gr</option>
-        <option value="team_事業部部門責任者gr">team_事業部部門責任者gr</option>
-        <option value="team_社長室_mgmt">team_社長室_mgmt</option>
-      </select>
-    </div>
+
   </div>
 
   <div class="divider"></div>
@@ -278,7 +269,6 @@
   function updateProgress() {
     const filled = [
       document.getElementById('q_name').value.trim(),
-      document.getElementById('q_slack_channel').value,
       document.querySelector('input[name="goal"]:checked'),
       document.querySelector('input[name="method"]:checked'),
       document.querySelectorAll('#lang_chips .chip.active').length > 0,
@@ -300,9 +290,7 @@
 
   async function submitForm() {
     const name = document.getElementById('q_name').value.trim();
-    const channel = document.getElementById('q_slack_channel').value;
     if (!name) { alert('お名前をご入力ください。'); return; }
-    if (!channel) { alert('通知先Slackチャンネルを選択してください。'); return; }
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
@@ -323,8 +311,7 @@
       existing_system: document.getElementById('q_existing_system').value,
       pain_points: document.getElementById('q_pain').value,
       concerns: document.getElementById('q_concerns').value,
-      monthly_vol: monthlyVols[document.getElementById('monthlyVol').value-1],
-      slack_channel: channel
+      monthly_vol: monthlyVols[document.getElementById('monthlyVol').value-1]
     };
 
     try {
