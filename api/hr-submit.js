@@ -6,8 +6,8 @@ export default async function handler(req, res) {
   const data = req.body;
 
   // ========== Supabase 保存 ==========
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = 'https://lzknpgcqrkaehofvzfja.supabase.co';
+  const supabaseKey = process.env.SUPABASE_KEY;
 
   if (supabaseUrl && supabaseKey) {
     try {
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   }
 
   // ========== Slack 通知 ==========
-  const slackUrl = process.env.SLACK_WEBHOOK_URL;
+  const slackUrl = process.env.SLACK_WEBHOOK;
 
   if (slackUrl) {
     const jobsPreview = data.jobs_detail
