@@ -136,13 +136,27 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
 
 /* ステップ入力 */
 .steps-section{margin-top:10px;}
-.steps-section label{font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;}
-.step-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
-.step-row{display:flex;align-items:center;gap:8px;}
+.steps-section>label{font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;}
+.step-list{display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+.step-row{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.step-row-top{display:flex;align-items:center;gap:8px;}
 .step-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--sub);width:20px;flex-shrink:0;text-align:center;}
-.step-row input{flex:1;font-size:12px;padding:7px 10px;}
+.step-row-top input{flex:1;font-size:12px;padding:7px 10px;}
 .step-del{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:15px;padding:0 4px;flex-shrink:0;transition:color 0.15s;}
 .step-del:hover{color:var(--red);}
+.step-row-bottom{display:flex;align-items:center;gap:10px;padding-left:28px;}
+.step-member-label{font-size:10.5px;font-weight:700;color:var(--sub);flex-shrink:0;}
+.step-member-chips{display:flex;flex-wrap:wrap;gap:4px;flex:1;}
+.sm-chip{display:inline-flex;align-items:center;padding:3px 10px;border:1.5px solid var(--border);border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;transition:all 0.15s;background:white;color:var(--sub);user-select:none;}
+.sm-chip:hover{border-color:var(--teal);color:var(--teal);}
+.sm-chip.active{border-color:var(--teal);background:var(--teal);color:white;}
+.step-time-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.step-time-label{font-size:10.5px;font-weight:700;color:var(--sub);}
+.step-time-input{width:56px!important;font-size:12px!important;padding:5px 8px!important;text-align:center;}
+.step-time-unit{font-size:10.5px;color:var(--sub);}
+.step-total-bar{background:var(--teal-light);border:1px solid rgba(10,138,110,0.2);border-radius:8px;padding:8px 14px;margin-top:4px;display:flex;align-items:center;gap:8px;font-size:12px;}
+.step-total-label{font-weight:700;color:var(--sub);}
+.step-total-num{font-family:'DM Mono',monospace;font-weight:700;color:var(--teal);font-size:14px;}
 .add-step-btn{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--teal);background:none;border:1px dashed var(--teal);border-radius:6px;padding:5px 12px;cursor:pointer;transition:all 0.15s;}
 .add-step-btn:hover{background:var(--teal-light);}
 
@@ -493,7 +507,11 @@ function collectState() {
         members: Array.from(card.querySelectorAll('.jm-chip.active')).map(c => c.dataset.member),
         count: card.querySelector('.job-count')?.value || '',
         time: card.querySelector('.job-time')?.value || '',
-        steps: Array.from(card.querySelectorAll('.step-input')).map(s => s.value)
+        steps: Array.from(card.querySelectorAll('.step-row')).map(row => ({
+          text: row.querySelector('.step-input')?.value || '',
+          members: Array.from(row.querySelectorAll('.sm-chip.active')).map(c => c.dataset.member),
+          time: row.querySelector('.step-time-input')?.value || ''
+        }))
       });
     });
   }
@@ -599,22 +617,22 @@ function addJob(catIdx, name='', members=[], count='', time='', steps=[]) {
         ${MEMBERS.map(m => `<div class="jm-chip${members.includes(m)?' active':''}" data-member="${m}" onclick="toggleJmChip(this)">${m}</div>`).join('')}
       </div>
     </div>
-    <div class="job-grid">
+    <div class="job-grid" style="grid-template-columns:1fr;">
       <div class="job-field">
         <label>月あたり件数</label>
         <input type="number" class="job-count" placeholder="例：15" min="0" value="${escHtml(count)}" oninput="onInput()">
-      </div>
-      <div class="job-field">
-        <label>1件あたり所要時間（分）</label>
-        <input type="number" class="job-time" placeholder="例：30" min="0" value="${escHtml(time)}" oninput="onInput()">
       </div>
     </div>
     <div class="steps-section">
       <label>業務ステップ（完了条件まで）</label>
       <div class="step-list">
-        ${steps.length ? steps.map((s,i) => stepRowHtml(i+1, s)).join('') : stepRowHtml(1,'')}
+        ${steps.length ? steps.map((s,i) => stepRowHtml(i+1, s.text||s, s.members||[], s.time||'')).join('') : stepRowHtml(1,'')}
       </div>
       <button class="add-step-btn" onclick="addStep(this)">＋ ステップを追加</button>
+      <div class="step-total-bar">
+        <span class="step-total-label">⏱ 合計時間（1件あたり）</span>
+        <span class="step-total-num">0 分</span>
+      </div>
     </div>
   `;
   list.appendChild(card);
@@ -626,11 +644,25 @@ function addJob(catIdx, name='', members=[], count='', time='', steps=[]) {
   return card;
 }
 
-function stepRowHtml(num, val='') {
+function stepRowHtml(num, val='', stepMembers=[], stepTime='') {
+  const chips = MEMBERS.map(m =>
+    `<div class="sm-chip${stepMembers.includes(m)?' active':''}" data-member="${m}" onclick="toggleSmChip(this)">${m}</div>`
+  ).join('');
   return `<div class="step-row">
-    <span class="step-num">${num}</span>
-    <input type="text" class="step-input" placeholder="ステップ内容を入力（例：書類を受け取る）" value="${escHtml(val)}" oninput="onInput()">
-    <button class="step-del" onclick="delStep(this)">×</button>
+    <div class="step-row-top">
+      <span class="step-num">${num}</span>
+      <input type="text" class="step-input" placeholder="ステップ内容を入力（例：書類を受け取る）" value="${escHtml(val)}" oninput="onInput()">
+      <button class="step-del" onclick="delStep(this)">×</button>
+    </div>
+    <div class="step-row-bottom">
+      <span class="step-member-label">担当：</span>
+      <div class="step-member-chips">${chips}</div>
+      <div class="step-time-wrap">
+        <span class="step-time-label">工数</span>
+        <input type="number" class="step-time-input" placeholder="0" min="0" value="${escHtml(stepTime)}" oninput="updateStepTotal(this)">
+        <span class="step-time-unit">分</span>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -641,13 +673,31 @@ function addStep(btn) {
   onInput();
 }
 
+function toggleSmChip(el) {
+  el.classList.toggle('active');
+  onInput();
+}
+
+function updateStepTotal(input) {
+  const card = input.closest('.job-card');
+  if (!card) return;
+  const times = Array.from(card.querySelectorAll('.step-time-input'))
+    .map(i => parseInt(i.value) || 0);
+  const total = times.reduce((a, b) => a + b, 0);
+  const bar = card.querySelector('.step-total-num');
+  if (bar) bar.textContent = total + ' 分';
+  onInput();
+}
+
 function delStep(btn) {
   const row = btn.closest('.step-row');
   const list = row.closest('.step-list');
   if (list.querySelectorAll('.step-row').length > 1) {
     row.remove();
-    // 番号振り直し
     list.querySelectorAll('.step-num').forEach((el, i) => el.textContent = i + 1);
+    // 合計時間再計算
+    const anyInput = list.querySelector('.step-time-input');
+    if (anyInput) updateStepTotal(anyInput);
   }
   onInput();
 }
@@ -707,7 +757,12 @@ function formatJobs() {
       const members = Array.from(card.querySelectorAll('.jm-chip.active')).map(c=>c.dataset.member).join('・') || '未設定';
       const count = card.querySelector('.job-count')?.value || '-';
       const time = card.querySelector('.job-time')?.value || '-';
-      const steps = Array.from(card.querySelectorAll('.step-input')).map((s,i)=>`  ${i+1}. ${s.value||'（未入力）'}`).join('\n');
+      const steps = Array.from(card.querySelectorAll('.step-row')).map((row,i)=>{
+        const text = row.querySelector('.step-input')?.value||'（未入力）';
+        const mems = Array.from(row.querySelectorAll('.sm-chip.active')).map(c=>c.dataset.member).join('・')||'未設定';
+        const t = row.querySelector('.step-time-input')?.value||'0';
+        return `  ${i+1}. ${text}（担当：${mems} / ${t}分）`;
+      }).join('\n');
       result.push(`${idx+1}. ${name}\n  担当：${members} / 月${count}件 / 1件${time}分\n  ステップ：\n${steps}`);
     });
   }
