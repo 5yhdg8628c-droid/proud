@@ -157,6 +157,14 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
 .step-total-bar{background:var(--teal-light);border:1px solid rgba(10,138,110,0.2);border-radius:8px;padding:8px 14px;margin-top:4px;display:flex;align-items:center;gap:8px;font-size:12px;}
 .step-total-label{font-weight:700;color:var(--sub);}
 .step-total-num{font-family:'DM Mono',monospace;font-weight:700;color:var(--teal);font-size:14px;}
+/* 件数UI */
+.count-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.count-input{width:72px!important;}
+.freq-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.freq-btn{padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:white;color:var(--sub);transition:all 0.15s;}
+.freq-btn.active{background:var(--teal);color:white;}
+.count-total{font-size:12px;color:var(--sub);margin-left:4px;}
+.count-total span{font-family:'DM Mono',monospace;font-weight:700;color:var(--teal);}
 .add-step-btn{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--teal);background:none;border:1px dashed var(--teal);border-radius:6px;padding:5px 12px;cursor:pointer;transition:all 0.15s;}
 .add-step-btn:hover{background:var(--teal-light);}
 
@@ -506,7 +514,7 @@ function collectState() {
         name: card.querySelector('.job-name-input')?.value || '',
         members: Array.from(card.querySelectorAll('.jm-chip.active')).map(c => c.dataset.member),
         count: card.querySelector('.job-count')?.value || '',
-        time: card.querySelector('.job-time')?.value || '',
+        freq: card.querySelector('.freq-btn.active')?.textContent || '月次',
         steps: Array.from(card.querySelectorAll('.step-row')).map(row => ({
           text: row.querySelector('.step-input')?.value || '',
           members: Array.from(row.querySelectorAll('.sm-chip.active')).map(c => c.dataset.member),
@@ -544,7 +552,7 @@ function restoreState(state) {
   }
   if (state.jobs) {
     state.jobs.forEach(j => {
-      addJob(j.cat, j.name, j.members, j.count, j.time, j.steps);
+      addJob(j.cat, j.name, j.members, j.count, j.freq||'月次', j.steps);
     });
   }
   if (state.inefficiency) document.getElementById('q_inefficiency').value = state.inefficiency;
@@ -598,7 +606,7 @@ function toggleCat(idx) {
 // ========== 仕事カード ==========
 let jobCounters = [0,0,0,0,0,0,0];
 
-function addJob(catIdx, name='', members=[], count='', time='', steps=[]) {
+function addJob(catIdx, name='', members=[], count='', freq='月次', steps=[]) {
   const list = document.getElementById('jobs-'+catIdx);
   const num = ++jobCounters[catIdx];
   const card = document.createElement('div');
@@ -617,10 +625,15 @@ function addJob(catIdx, name='', members=[], count='', time='', steps=[]) {
         ${MEMBERS.map(m => `<div class="jm-chip${members.includes(m)?' active':''}" data-member="${m}" onclick="toggleJmChip(this)">${m}</div>`).join('')}
       </div>
     </div>
-    <div class="job-grid" style="grid-template-columns:1fr;">
-      <div class="job-field">
-        <label>月あたり件数</label>
-        <input type="number" class="job-count" placeholder="例：15" min="0" value="${escHtml(count)}" oninput="onInput()">
+    <div class="job-field" style="margin-bottom:10px;">
+      <label>件数</label>
+      <div class="count-wrap">
+        <input type="number" class="job-count count-input" placeholder="例：15" min="0" value="${escHtml(count)}" oninput="updateCountTotal(this)">
+        <div class="freq-toggle">
+          <button class="freq-btn${freq==='月次'?' active':''}" onclick="setFreq(this,'月次')">月次</button>
+          <button class="freq-btn${freq==='年次'?' active':''}" onclick="setFreq(this,'年次')">年次</button>
+        </div>
+        <div class="count-total">総件数：<span class="count-total-num">${calcTotal(count, freq)}</span> 件/年</div>
       </div>
     </div>
     <div class="steps-section">
@@ -670,6 +683,33 @@ function addStep(btn) {
   const stepList = btn.previousElementSibling;
   const num = stepList.querySelectorAll('.step-row').length + 1;
   stepList.insertAdjacentHTML('beforeend', stepRowHtml(num));
+  onInput();
+}
+
+function calcTotal(count, freq) {
+  const n = parseInt(count) || 0;
+  return freq === '月次' ? n * 12 : n;
+}
+
+function updateCountTotal(input) {
+  const wrap = input.closest('.count-wrap');
+  if (!wrap) return;
+  const freq = wrap.querySelector('.freq-btn.active')?.textContent || '月次';
+  const total = calcTotal(input.value, freq);
+  const el = wrap.querySelector('.count-total-num');
+  if (el) el.textContent = total;
+  onInput();
+}
+
+function setFreq(btn, freq) {
+  const toggle = btn.closest('.freq-toggle');
+  toggle.querySelectorAll('.freq-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const wrap = btn.closest('.count-wrap');
+  const countInput = wrap.querySelector('.job-count');
+  const total = calcTotal(countInput?.value || 0, freq);
+  const el = wrap.querySelector('.count-total-num');
+  if (el) el.textContent = total;
   onInput();
 }
 
@@ -756,6 +796,8 @@ function formatJobs() {
       const name = card.querySelector('.job-name-input')?.value || '（未入力）';
       const members = Array.from(card.querySelectorAll('.jm-chip.active')).map(c=>c.dataset.member).join('・') || '未設定';
       const count = card.querySelector('.job-count')?.value || '-';
+      const freq = card.querySelector('.freq-btn.active')?.textContent || '月次';
+      const totalCount = freq === '月次' ? (parseInt(count)||0)*12 : (parseInt(count)||0);
       const time = card.querySelector('.job-time')?.value || '-';
       const steps = Array.from(card.querySelectorAll('.step-row')).map((row,i)=>{
         const text = row.querySelector('.step-input')?.value||'（未入力）';
@@ -763,7 +805,7 @@ function formatJobs() {
         const t = row.querySelector('.step-time-input')?.value||'0';
         return `  ${i+1}. ${text}（担当：${mems} / ${t}分）`;
       }).join('\n');
-      result.push(`${idx+1}. ${name}\n  担当：${members} / 月${count}件 / 1件${time}分\n  ステップ：\n${steps}`);
+      result.push(`${idx+1}. ${name}\n  担当：${members} / ${freq}${count}件（年間${totalCount}件）\n  ステップ：\n${steps}`);
     });
   }
   return result.join('\n');
