@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       blocks: [
         {
           type: 'header',
-          text: { type: 'plain_text', text: '📋 人事労務 業務棚卸し — 新規回答', emoji: true }
+          text: { type: 'plain_text', text: `📋 人事労務 業務棚卸し — ${data.participants || '不明'} の回答`, emoji: true }
         },
         {
           type: 'section',

@@ -231,14 +231,14 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
       <input type="text" id="q_date" placeholder="例：2025年6月10日" oninput="onInput()">
     </div>
     <div class="card">
-      <div class="q-label">記入参加者 <span class="q-required">必須</span></div>
-      <div class="q-hint">本日この場にいるメンバーを選んでください（複数可）</div>
+      <div class="q-label">回答者（自分を選択） <span class="q-required">必須</span></div>
+      <div class="q-hint">このフォームに回答するご自身を選んでください（1人）</div>
       <div class="member-chips" id="participants">
-        <div class="member-chip" onclick="toggleMember(this,'平山部長')"><div class="avatar">平</div>平山部長</div>
-        <div class="member-chip" onclick="toggleMember(this,'石橋Mgr')"><div class="avatar">石</div>石橋Mgr</div>
-        <div class="member-chip" onclick="toggleMember(this,'奥田')"><div class="avatar">奥</div>奥田</div>
-        <div class="member-chip" onclick="toggleMember(this,'小沼')"><div class="avatar">小</div>小沼</div>
-        <div class="member-chip" onclick="toggleMember(this,'原島')"><div class="avatar">原</div>原島</div>
+        <div class="member-chip" onclick="selectSingleMember(this,'平山部長')"><div class="avatar">平</div>平山部長</div>
+        <div class="member-chip" onclick="selectSingleMember(this,'石橋Mgr')"><div class="avatar">石</div>石橋Mgr</div>
+        <div class="member-chip" onclick="selectSingleMember(this,'奥田')"><div class="avatar">奥</div>奥田</div>
+        <div class="member-chip" onclick="selectSingleMember(this,'小沼')"><div class="avatar">小</div>小沼</div>
+        <div class="member-chip" onclick="selectSingleMember(this,'原島')"><div class="avatar">原</div>原島</div>
       </div>
     </div>
   </div>
@@ -252,7 +252,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
       <div><h2>部門全体の時間配分（大枠）</h2><p>部門全体として各カテゴリに使っている時間の割合を設定してください（合計100%）</p></div>
     </div>
     <div class="card">
-      <div class="q-hint">各カテゴリの割合をスライダーで設定してください。合計が100%になるように調整してください。</div>
+      <div class="q-hint">部門全体として各カテゴリに使っている時間の割合を入力してください（合計100%）。<br>※ 部門を代表してわかる方が入力してください。不明な場合は0のままで構いません。</div>
 
       <div class="ratio-grid" id="ratio-sliders">
         <div class="ratio-item"><div class="ratio-item-label">📂 入退社系</div><div class="ratio-item-input-wrap"><input type="number" class="ratio-item-num" id="r0" min="0" max="100" value="20" oninput="updateRatio()"><span class="ratio-item-pct">%</span></div><div class="ratio-bar"><div class="ratio-bar-fill" id="rb0" style="width:20%"></div></div></div>
@@ -464,7 +464,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
 
   <div class="submit-area">
     <button class="btn-submit" id="submitBtn" onclick="submitForm()">📤 送信する</button>
-    <p style="font-size:11px;color:var(--sub);margin-top:12px;">送信後、Slackに通知が届きます。回答はSupabaseに保存されます。</p>
+    <p style="font-size:11px;color:var(--sub);margin-top:12px;">送信後、Slackに通知が届きます。4名分の回答がそれぞれSupabaseに保存されます。</p>
   </div>
 
   <div class="success" id="successArea">
@@ -477,7 +477,11 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
 
 <script>
 const MEMBERS = ['平山部長','石橋Mgr','奥田','小沼','原島'];
-const SAVE_KEY = 'hr_kaizen_form_v1';
+const SAVE_KEY_BASE = 'hr_kaizen_form_v1';
+function getSaveKey() {
+  const member = document.querySelector('#participants .member-chip.active')?.dataset?.member || 'unknown';
+  return SAVE_KEY_BASE + '_' + member;
+}
 let saveTimer = null;
 
 // ========== 一時保存 ==========
@@ -491,7 +495,7 @@ function markUnsaved() {
 function autoSave() {
   const state = collectState();
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    localStorage.setItem(getSaveKey(), JSON.stringify(state));
     document.getElementById('saveDot').classList.remove('unsaved');
     document.getElementById('saveStatusText').textContent = '自動保存済み — ' + new Date().toLocaleTimeString('ja-JP');
   } catch(e) {}
@@ -499,7 +503,7 @@ function autoSave() {
 
 function clearSave() {
   if (!confirm('保存データをリセットしますか？入力内容がすべて消えます。')) return;
-  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(getSaveKey());
   location.reload();
 }
 
@@ -563,6 +567,14 @@ function restoreState(state) {
 // ========== 部門メンバー選択 ==========
 function toggleMember(el, name) {
   el.classList.toggle('active');
+  el.dataset.member = name;
+  onInput();
+}
+
+function selectSingleMember(el, name) {
+  // 1人だけ選択（ラジオボタン挙動）
+  document.querySelectorAll('#participants .member-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
   el.dataset.member = name;
   onInput();
 }
@@ -846,7 +858,7 @@ async function submitForm() {
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'エラー');
 
-    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(getSaveKey());
     document.getElementById('submitBtn').style.display = 'none';
     document.querySelector('.submit-area p').style.display = 'none';
     const success = document.getElementById('successArea');
@@ -873,7 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // localStorageから復元
   try {
-    const saved = localStorage.getItem(SAVE_KEY);
+    const saved = localStorage.getItem(getSaveKey());
     if (saved) {
       const state = JSON.parse(saved);
       restoreState(state);
