@@ -216,6 +216,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
         <div class="member-chip" onclick="toggleMember(this,'石橋Mgr')"><div class="avatar">石</div>石橋Mgr</div>
         <div class="member-chip" onclick="toggleMember(this,'奥田')"><div class="avatar">奥</div>奥田</div>
         <div class="member-chip" onclick="toggleMember(this,'小沼')"><div class="avatar">小</div>小沼</div>
+        <div class="member-chip" onclick="toggleMember(this,'原島')"><div class="avatar">原</div>原島</div>
       </div>
     </div>
   </div>
@@ -453,7 +454,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.7;}
 </div>
 
 <script>
-const MEMBERS = ['平山部長','石橋Mgr','奥田','小沼'];
+const MEMBERS = ['平山部長','石橋Mgr','奥田','小沼','原島'];
 const SAVE_KEY = 'hr_kaizen_form_v1';
 let saveTimer = null;
 
@@ -770,7 +771,7 @@ function escHtml(str) {
 document.addEventListener('DOMContentLoaded', () => {
   // member chipにdata-member付与
   document.querySelectorAll('#participants .member-chip').forEach((chip, i) => {
-    chip.dataset.member = ['平山部長','石橋Mgr','奥田','小沼'][i];
+    chip.dataset.member = ['平山部長','石橋Mgr','奥田','小沼','原島'][i];
   });
 
   // localStorageから復元
