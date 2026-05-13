@@ -15,11 +15,11 @@ export default async function handler(req, res) {
 
     const payload = {
       session_id,
-      answers: answers ?? null,
-      messages: messages ?? null,
       completed: completed ?? false,
       updated_at: new Date().toISOString(),
     };
+    if (answers !== undefined) payload.answers = answers;
+    if (messages !== undefined) payload.messages = messages;
 
     const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/interview_logs`, {
       method: 'POST',
