@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROUD AI面談</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: #0a0a1a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .logo {
+      font-size: 14px;
+      letter-spacing: 4px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+    }
+
+    .wave-container {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wave-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(99, 179, 237, 0.4);
+      animation: none;
+    }
+
+    .wave-ring:nth-child(1) { width: 100%; height: 100%; }
+    .wave-ring:nth-child(2) { width: 75%; height: 75%; }
+    .wave-ring:nth-child(3) { width: 50%; height: 50%; }
+
+    @keyframes ripple {
+      0% { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+
+    .wave-container.ai-speaking .wave-ring:nth-child(1) {
+      animation: ripple 1.5s ease-out infinite;
+    }
+    .wave-container.ai-speaking .wave-ring:nth-child(2) {
+      animation: ripple 1.5s ease-out infinite 0.3s;
+    }
+    .wave-container.ai-speaking .wave-ring:nth-child(3) {
+      animation: ripple 1.5s ease-out infinite 0.6s;
+    }
+
+    .wave-container.user-speaking .wave-ring:nth-child(1) {
+      border-color: rgba(72, 199, 142, 0.5);
+      animation: ripple 0.8s ease-out infinite;
+    }
+    .wave-container.user-speaking .wave-ring:nth-child(2) {
+      border-color: rgba(72, 199, 142, 0.4);
+      animation: ripple 0.8s ease-out infinite 0.15s;
+    }
+    .wave-container.user-speaking .wave-ring:nth-child(3) {
+      border-color: rgba(72, 199, 142, 0.3);
+      animation: ripple 0.8s ease-out infinite 0.3s;
+    }
+
+    .center-dot {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #63b3ed, #4299e1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 30px rgba(99, 179, 237, 0.4);
+      transition: background 0.3s;
+      z-index: 10;
+    }
+
+    .wave-container.user-speaking .center-dot {
+      background: linear-gradient(135deg, #48c78e, #2d9e6e);
+      box-shadow: 0 0 30px rgba(72, 199, 142, 0.4);
+    }
+
+    .status-text {
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+      min-height: 20px;
+      transition: color 0.3s;
+    }
+
+    .status-text.speaking { color: #63b3ed; }
+    .status-text.listening { color: #48c78e; }
+
+    .transcript {
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .transcript::-webkit-scrollbar { width: 4px; }
+    .transcript::-webkit-scrollbar-track { background: transparent; }
+    .transcript::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+    .message {
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 85%;
+    }
+
+    .message.ai {
+      background: rgba(99, 179, 237, 0.15);
+      color: #a8d8f5;
+      align-self: flex-start;
+    }
+
+    .message.user {
+      background: rgba(72, 199, 142, 0.15);
+      color: #9eeac5;
+      align-self: flex-end;
+    }
+
+    .btn-start {
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #63b3ed, #4299e1);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(99, 179, 237, 0.3);
+    }
+
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(99, 179, 237, 0.5);
+    }
+
+    .btn-start:disabled {
+      background: #444;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-end {
+      padding: 10px 32px;
+      background: transparent;
+      color: #e07070;
+      border: 1px solid #e07070;
+      border-radius: 50px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: none;
+    }
+
+    .btn-end:hover { background: rgba(224, 112, 112, 0.1); }
+
+    .progress { font-size: 12px; color: #666; }
+
+    .completed-msg {
+      text-align: center;
+      padding: 20px;
+      background: rgba(72, 199, 142, 0.1);
+      border-radius: 12px;
+      color: #48c78e;
+      font-size: 16px;
+      display: none;
+    }
+
+    .error-msg {
+      color: #e07070;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">PROUD</div>
+    <div class="title">AI面談システム</div>
+
+    <div class="wave-container" id="waveContainer">
+      <div class="wave-ring"></div>
+      <div class="wave-ring"></div>
+      <div class="wave-ring"></div>
+      <div class="center-dot">🎤</div>
+    </div>
+
+    <div class="status-text" id="statusText">面談を開始するにはボタンを押してください</div>
+    <div class="transcript" id="transcript" style="display:none"></div>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <button class="btn-start" id="btnStart" onclick="startInterview()">面談を開始する</button>
+    <button class="btn-end" id="btnEnd" onclick="endInterview()">面談を終了する</button>
+
+    <div class="completed-msg" id="completedMsg">
+      ✅ 面談が完了しました。<br>担当者からご連絡いたします。
+    </div>
+    <div class="progress" id="progressText"></div>
+  </div>
+
+  <script>
+    let pc = null, dc = null, audioEl = null;
+    let sessionId = null, messages = [], isConnected = false;
+    let currentAiText = '', currentUserText = '', saveTimer = null;
+
+    function generateSessionId() {
+      return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function setStatus(text, type = '') {
+      const el = document.getElementById('statusText');
+      el.textContent = text;
+      el.className = 'status-text ' + type;
+    }
+
+    function setWaveState(state) {
+      document.getElementById('waveContainer').className = 'wave-container ' + state;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function addMessage(role, text) {
+      if (!text.trim()) return;
+      messages.push({ role, text, timestamp: new Date().toISOString() });
+      const transcript = document.getElementById('transcript');
+      transcript.style.display = 'flex';
+      const div = document.createElement('div');
+      div.className = 'message ' + role;
+      div.textContent = text;
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+      scheduleSave();
+    }
+
+    function scheduleSave() {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => saveLog(false), 3000);
+    }
+
+    async function saveLog(completed) {
+      if (!sessionId) return;
+      try {
+        await fetch('/api/interview-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, messages, completed }),
+        });
+      } catch (e) { console.error('Save error:', e); }
+    }
+
+    async function startInterview() {
+      const btn = document.getElementById('btnStart');
+      btn.disabled = true;
+      setStatus('接続中...', '');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        sessionId = generateSessionId();
+        const tokenRes = await fetch('/api/interview-token', { method: 'POST' });
+        if (!tokenRes.ok) throw new Error('トークン取得に失敗しました');
+        const tokenData = await tokenRes.json();
+        const ephemeralKey = tokenData.client_secret?.value;
+        if (!ephemeralKey) throw new Error('トークンが無効です');
+
+        pc = new RTCPeerConnection();
+        audioEl = document.createElement('audio');
+        audioEl.autoplay = true;
+        pc.ontrack = (e) => { audioEl.srcObject = e.streams[0]; };
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+        dc = pc.createDataChannel('oai-events');
+        dc.onopen = () => {
+          isConnected = true;
+          setStatus('AIが話しています...', 'speaking');
+          setWaveState('ai-speaking');
+          document.getElementById('btnEnd').style.display = 'inline-block';
+          document.getElementById('progressText').textContent = '面談中';
+        };
+        dc.onmessage = (e) => handleRealtimeEvent(JSON.parse(e.data));
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        const sdpRes = await fetch(
+          'https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${ephemeralKey}`, 'Content-Type': 'application/sdp' },
+            body: offer.sdp,
+          }
+        );
+        if (!sdpRes.ok) throw new Error('WebRTC接続に失敗しました');
+        await pc.setRemoteDescription({ type: 'answer', sdp: await sdpRes.text() });
+
+      } catch (err) {
+        console.error(err);
+        showError('エラー: ' + err.message);
+        btn.disabled = false;
+        setStatus('エラーが発生しました');
+      }
+    }
+
+    function handleRealtimeEvent(event) {
+      switch (event.type) {
+        case 'response.audio_transcript.delta':
+          currentAiText += event.delta || '';
+          setStatus('AIが話しています...', 'speaking');
+          setWaveState('ai-speaking');
+          break;
+        case 'response.audio_transcript.done':
+          if (currentAiText) {
+            addMessage('ai', currentAiText);
+            const last = messages[messages.length - 1];
+            if (last && last.text.includes('面談はこれで終了')) setTimeout(() => endInterview(true), 2000);
+            currentAiText = '';
+          }
+          setStatus('お話しください...', 'listening');
+          setWaveState('');
+          break;
+        case 'input_audio_buffer.speech_started':
+          setStatus('聞いています...', 'listening');
+          setWaveState('user-speaking');
+          break;
+        case 'input_audio_buffer.speech_stopped':
+          setStatus('処理中...', '');
+          setWaveState('');
+          break;
+        case 'conversation.item.input_audio_transcription.completed':
+          if (event.transcript) { addMessage('user', event.transcript); }
+          break;
+        case 'response.done':
+          setStatus('お話しください...', 'listening');
+          break;
+        case 'error':
+          console.error('Realtime error:', event);
+          showError('接続エラーが発生しました');
+          break;
+      }
+    }
+
+    async function endInterview(completed = false) {
+      isConnected = false;
+      if (saveTimer) clearTimeout(saveTimer);
+      await saveLog(true);
+      if (dc) { dc.close(); dc = null; }
+      if (pc) { pc.close(); pc = null; }
+      if (audioEl) { audioEl.srcObject = null; audioEl = null; }
+      document.getElementById('btnEnd').style.display = 'none';
+      document.getElementById('btnStart').style.display = 'none';
+      document.getElementById('waveContainer').style.display = 'none';
+      document.getElementById('statusText').style.display = 'none';
+      document.getElementById('completedMsg').style.display = 'block';
+      document.getElementById('progressText').textContent = '面談完了';
+    }
+  </script>
+</body>
+</html>
