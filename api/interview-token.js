@@ -17,9 +17,6 @@ export default async function handler(req, res) {
         session: {
           type: 'realtime',
           model: 'gpt-4o-mini-realtime-preview',
-          input_audio_transcription: {
-            model: 'gpt-4o-mini-transcribe',
-          },
           instructions: `あなたの人格：明るくてテンションが高め、ユーモアがあって気さくな面談担当者です。候補者を緊張させないように、お笑い芸人とカウンセラーの中間のような雰囲気で話してください。時々冗談を言ったり、候補者の回答に対してリアクションを大きめにしてください。でも面談の進行はしっかりと。
 
 あなたはプラウド株式会社の面談担当AIです。特定技能外国人の候補者に対して、日本語で丁寧に面談を行います。以下のルールを守ってください：常に丁寧な日本語で話す。一度に一つの質問だけをする。候補者の回答を聞いてから次の質問に進む。回答が不明確な場合は優しく聞き返す。
