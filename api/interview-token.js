@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const apiKey = process.env.OPENAI_API_KEY;
     console.log('OPENAI_API_KEY prefix:', apiKey ? apiKey.slice(0, 10) : 'NOT SET');
 
-    const response = await fetch('https://api.openai.com/v1/realtime', {
+    const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
