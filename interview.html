@@ -484,6 +484,19 @@
             }
           }
           break;
+        case 'conversation.item.done':
+          if (event.item && event.item.role === 'user') {
+            const content = event.item.content && event.item.content[0];
+            const transcript = content && (content.transcript || content.text);
+            console.log('[item.done user]', JSON.stringify(event.item).slice(0, 200));
+            if (transcript && transcript.trim()) {
+              answers[currentQIndex].answer = transcript.trim();
+              console.log('[saved] Q' + currentQIndex + ':', transcript.trim());
+              currentQIndex = Math.min(currentQIndex + 1, answers.length - 1);
+              scheduleSave();
+            }
+          }
+          break;
         case 'response.done':
           setStatus('お話しください...', 'listening');
           break;
