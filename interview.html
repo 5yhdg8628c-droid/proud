@@ -411,13 +411,6 @@
           setWaveState('ai-speaking');
           btn.style.display = 'none';
           document.getElementById('guideCard').style.display = 'none';
-          dc.send(JSON.stringify({
-            type: 'session.update',
-            session: {
-              type: 'realtime',
-              input_audio_transcription: { model: 'whisper-1' },
-            },
-          }));
         };
         dc.onmessage = (e) => handleRealtimeEvent(JSON.parse(e.data));
 
