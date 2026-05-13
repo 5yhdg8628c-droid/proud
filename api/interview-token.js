@@ -102,7 +102,7 @@ export default async function handler(req, res) {
           audio: {
             output: {
               voice: 'alloy',
-              speed: 0.75,
+              speed: 0.9,
             },
           },
         },
