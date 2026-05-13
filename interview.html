@@ -146,6 +146,18 @@
 
     .error-msg { color: #e07070; font-size: 13px; text-align: center; display: none; }
 
+    .btn-test {
+      padding: 8px 20px;
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 20px;
+      color: #444;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-test:hover { color: #666; border-color: #555; }
+
     /* ── Screen: Confirmation ── */
     #screenConfirmation { display: none; flex-direction: column; height: 100vh; }
 
@@ -220,6 +232,8 @@
       <div class="error-msg" id="errorMsg"></div>
 
       <button class="btn-start" id="btnStart" onclick="startInterview()">面談を開始する</button>
+
+      <button class="btn-test" onclick="showConfirmationScreen()">確認画面を見る（テスト用）</button>
 
       <div class="guide-card" id="guideCard">
         <h3>ご利用の前に</h3>
