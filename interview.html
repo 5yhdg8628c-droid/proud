@@ -216,10 +216,6 @@
 
       <div class="status-text" id="statusText">面談を開始するにはボタンを押してください</div>
 
-      <div class="answer-card" id="answerCard" style="display:none">
-        <div class="answer-text empty" id="currentAnswerText">（回答待ち）</div>
-        <button class="btn-edit-inline" onclick="editCurrentAnswer()">✏️</button>
-      </div>
 
       <div class="error-msg" id="errorMsg"></div>
 
@@ -269,7 +265,6 @@
     let pc = null, dc = null, audioEl = null;
     let sessionId = null, isConnected = false;
     let currentAiText = '', saveTimer = null;
-    let editingCurrentAnswer = false;
 
     function generateSessionId() {
       return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -302,72 +297,70 @@
         badge.textContent = '質問 ' + currentQIndex + ' / 35';
         label.textContent = QUESTIONS[currentQIndex];
       }
-      if (!editingCurrentAnswer) updateCurrentAnswerDisplay();
     }
 
-    function updateCurrentAnswerDisplay() {
-      const el = document.getElementById('currentAnswerText');
-      if (!el) return;
-      const text = answers[currentQIndex].answer;
-      if (text) {
-        el.textContent = text;
-        el.className = 'answer-text';
-      } else {
-        el.textContent = '（回答待ち）';
-        el.className = 'answer-text empty';
-      }
-    }
-
-    function editCurrentAnswer() {
-      editingCurrentAnswer = true;
-      const card = document.getElementById('answerCard');
-      const current = answers[currentQIndex].answer;
-      card.innerHTML =
-        '<div class="answer-edit-area">' +
-          '<textarea class="answer-edit-input" id="inlineEditInput">' + current + '</textarea>' +
-          '<div class="edit-actions">' +
-            '<button class="btn-save" onclick="saveCurrentAnswer()">保存</button>' +
-            '<button class="btn-cancel" onclick="cancelCurrentAnswer()">キャンセル</button>' +
-          '</div>' +
-        '</div>';
-      document.getElementById('inlineEditInput').focus();
-    }
-
-    function saveCurrentAnswer() {
-      const val = (document.getElementById('inlineEditInput').value || '').trim();
-      answers[currentQIndex].answer = val;
-      restoreAnswerCard();
-      scheduleSave();
-    }
-
-    function cancelCurrentAnswer() {
-      restoreAnswerCard();
-    }
-
-    function restoreAnswerCard() {
-      editingCurrentAnswer = false;
-      const card = document.getElementById('answerCard');
-      const text = answers[currentQIndex].answer;
-      card.innerHTML =
-        '<div class="answer-text ' + (text ? '' : 'empty') + '" id="currentAnswerText">' +
-          (text || '（回答待ち）') +
-        '</div>' +
-        '<button class="btn-edit-inline" onclick="editCurrentAnswer()">✏️</button>';
-    }
+    const QUESTION_KEYWORDS = [
+      ["お名前"],
+      ["生年月日"],
+      ["性別"],
+      ["国籍"],
+      ["ビザ", "在留資格"],
+      ["いつまで有効", "有効", "期限"],
+      ["運転免許"],
+      ["その他の資格"],
+      ["経験のある仕事", "どんな仕事"],
+      ["技能試験"],
+      ["日本語試験"],
+      ["キャリアアップカード"],
+      ["身長"],
+      ["体重"],
+      ["靴のサイズ", "靴"],
+      ["服のサイズ", "服"],
+      ["就業状況", "在職", "離職"],
+      ["希望の業種", "業種"],
+      ["希望の勤務地", "勤務地"],
+      ["希望する仕事内容", "仕事内容"],
+      ["譲れない", "希望条件"],
+      ["一時帰国"],
+      ["犯罪歴"],
+      ["不許可歴"],
+      ["強制送還", "出国命令"],
+      ["配偶者"],
+      ["宗教"],
+      ["血液型"],
+      ["趣味", "特技"],
+      ["タトゥー"],
+      ["タバコ", "喫煙"],
+      ["お酒", "飲酒"],
+      ["働きたい理由"],
+      ["特定技能2号"],
+      ["健康状態"],
+      ["お金", "何に使"],
+    ];
 
     function detectQuestionFromText(text) {
-      const match = text.match(/質問\s*(\d+)[：:]/);
-      if (match) {
-        const n = parseInt(match[1]);
+      // 質問N： パターンを最優先で検出
+      const numMatch = text.match(/質問\s*(\d+)[：:]/);
+      if (numMatch) {
+        const n = parseInt(numMatch[1]);
         if (n >= 1 && n <= 35 && n !== currentQIndex) {
           currentQIndex = n;
           updateQuestionUI();
         }
         return;
       }
-      if (text.includes('お名前') && currentQIndex === 0) {
+      // キーワードマッチング（スコアリング方式）
+      let bestIdx = -1, bestScore = 0;
+      QUESTION_KEYWORDS.forEach(function(keywords, i) {
+        let score = 0;
+        keywords.forEach(function(kw) { if (text.includes(kw)) score++; });
+        if (score > bestScore) { bestScore = score; bestIdx = i; }
+      });
+      if (bestScore > 0 && bestIdx >= 0 && bestIdx !== currentQIndex) {
+        currentQIndex = bestIdx;
         updateQuestionUI();
       }
+    }
     }
 
     function scheduleSave() {
@@ -413,7 +406,6 @@
           setWaveState('ai-speaking');
           btn.style.display = 'none';
           document.getElementById('guideCard').style.display = 'none';
-          document.getElementById('answerCard').style.display = 'flex';
           updateQuestionUI();
           dc.send(JSON.stringify({ type: 'response.create' }));
         };
@@ -470,8 +462,7 @@
         case 'conversation.item.input_audio_transcription.completed':
           if (event.transcript && event.transcript.trim()) {
             answers[currentQIndex].answer = event.transcript.trim();
-            if (!editingCurrentAnswer) updateCurrentAnswerDisplay();
-            scheduleSave();
+                  scheduleSave();
           }
           break;
         case 'response.done':
