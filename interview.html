@@ -487,8 +487,10 @@
           setStatus('お話しください...', 'listening');
           break;
         case 'error':
+          if (event.error?.code !== 'invalid_value') {
+            showError('接続エラーが発生しました');
+          }
           console.error('Realtime error:', JSON.stringify(event, null, 2));
-          showError('接続エラーが発生しました');
           break;
       }
     }
