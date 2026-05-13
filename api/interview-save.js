@@ -33,9 +33,11 @@ export default async function handler(req, res) {
     });
 
     if (!sbRes.ok) {
-      const err = await sbRes.text();
-      console.error('Supabase error:', err);
-      return res.status(500).json({ error: 'Supabase error', detail: err });
+      const errText = await sbRes.text();
+      let errJson;
+      try { errJson = JSON.parse(errText); } catch { errJson = errText; }
+      console.error('Supabase error:', JSON.stringify({ status: sbRes.status, body: errJson }, null, 2));
+      return res.status(500).json({ error: 'Supabase error', detail: errJson });
     }
 
     return res.status(200).json({ success: true });
