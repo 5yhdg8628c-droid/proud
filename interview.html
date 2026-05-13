@@ -472,7 +472,20 @@
         case 'conversation.item.input_audio_transcription.completed':
           if (event.transcript && event.transcript.trim()) {
             answers[currentQIndex].answer = event.transcript.trim();
+            console.log('[transcription.completed] Q' + currentQIndex + ':', answers[currentQIndex].answer);
             scheduleSave();
+          }
+          break;
+        case 'conversation.item.created':
+          if (event.item && event.item.role === 'user' && event.item.type === 'message') {
+            const content = event.item.content && event.item.content[0];
+            const transcript = content && (content.transcript || content.text);
+            if (transcript && transcript.trim()) {
+              answers[currentQIndex].answer = transcript.trim();
+              console.log('[item.created] Q' + currentQIndex + ' → "' + answers[currentQIndex].answer + '"');
+              currentQIndex = Math.min(currentQIndex + 1, answers.length - 1);
+              scheduleSave();
+            }
           }
           break;
         case 'response.done':
