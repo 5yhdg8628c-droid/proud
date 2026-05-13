@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-realtime-preview-2024-12-17',
+        model: 'gpt-4o-realtime-preview',
         voice: 'alloy',
         instructions: `あなたはプラウド株式会社の面談担当AIです。特定技能外国人の候補者に対して、日本語で丁寧に面談を行います。
 
