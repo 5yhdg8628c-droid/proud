@@ -118,8 +118,8 @@ export default async function handler(req, res) {
 全ての質問が終わったら：「ありがとうございました。面談はこれで終了です。担当者からご連絡いたします。またいつでも話しかけてくださいね！」と明るく締めくくってください。`,
           audio: {
             output: {
-              voice: 'alloy',
-              speed: 0.9,
+              voice: 'verse',
+              speed: 0.85,
             },
           },
         },
