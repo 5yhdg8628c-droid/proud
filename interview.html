@@ -304,6 +304,7 @@
         const tokenRes = await fetch('/api/interview-token', { method: 'POST' });
         if (!tokenRes.ok) throw new Error('トークン取得に失敗しました');
         const tokenData = await tokenRes.json();
+        console.log('tokenData:', JSON.stringify(tokenData, null, 2));
         const ephemeralKey = tokenData.client_secret?.value;
         if (!ephemeralKey) throw new Error('トークンが無効です');
 
