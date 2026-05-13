@@ -437,6 +437,7 @@
     }
 
     function handleRealtimeEvent(event) {
+      console.log('[RT event]', event.type, JSON.stringify(event).slice(0, 150));
       switch (event.type) {
         case 'response.audio_transcript.delta':
           currentAiText += event.delta || '';
