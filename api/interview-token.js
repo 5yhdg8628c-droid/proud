@@ -122,6 +122,9 @@ export default async function handler(req, res) {
               speed: 0.85,
             },
           },
+          input_audio_transcription: {
+            model: 'whisper-1',
+          },
         },
       }),
     });

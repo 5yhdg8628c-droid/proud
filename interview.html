@@ -41,18 +41,11 @@
       display: flex; flex-direction: column; align-items: center; gap: 20px;
     }
 
-    .question-badge {
-      padding: 4px 16px;
-      background: rgba(122,163,200,0.12);
-      border: 1px solid rgba(122,163,200,0.3);
-      border-radius: 20px;
-      font-size: 12px; letter-spacing: 2px; color: #7aa3c8; font-weight: 600;
-    }
-
     .question-label {
-      font-size: 20px; font-weight: 700;
-      text-align: center; color: #f0f0ff;
-      line-height: 1.55; min-height: 56px;
+      font-size: 18px; font-weight: 600;
+      text-align: center; color: #d0d8f0;
+      line-height: 1.7; min-height: 56px;
+      max-width: 100%; white-space: pre-wrap;
     }
 
     /* ── Wave ── */
@@ -216,7 +209,6 @@
     </header>
 
     <div class="content">
-      <div class="question-badge" id="questionProgress">準備中...</div>
       <div class="question-label" id="questionLabel"></div>
 
       <div class="wave-container" id="waveContainer">
@@ -419,7 +411,10 @@
           setWaveState('ai-speaking');
           btn.style.display = 'none';
           document.getElementById('guideCard').style.display = 'none';
-          updateQuestionUI();
+          dc.send(JSON.stringify({
+            type: 'session.update',
+            session: { input_audio_transcription: { model: 'whisper-1' } },
+          }));
           dc.send(JSON.stringify({ type: 'response.create' }));
         };
         dc.onmessage = (e) => handleRealtimeEvent(JSON.parse(e.data));
@@ -450,6 +445,7 @@
       switch (event.type) {
         case 'response.audio_transcript.delta':
           currentAiText += event.delta || '';
+          document.getElementById('questionLabel').textContent = currentAiText;
           setStatus('AIが話しています...', 'speaking');
           setWaveState('ai-speaking');
           break;
@@ -465,6 +461,7 @@
           setWaveState('');
           break;
         case 'input_audio_buffer.speech_started':
+          document.getElementById('questionLabel').textContent = '';
           setStatus('聞いています...', 'listening');
           setWaveState('user-speaking');
           break;
@@ -475,7 +472,7 @@
         case 'conversation.item.input_audio_transcription.completed':
           if (event.transcript && event.transcript.trim()) {
             answers[currentQIndex].answer = event.transcript.trim();
-                  scheduleSave();
+            scheduleSave();
           }
           break;
         case 'response.done':
