@@ -406,6 +406,10 @@
           document.getElementById('btnEnd').style.display = 'inline-block';
           document.getElementById('progressText').textContent = '面談中';
           document.getElementById('guideCard').style.display = 'none';
+          dc.send(JSON.stringify({
+            type: 'response.create',
+            response: { modalities: ['audio', 'text'] },
+          }));
         };
         dc.onmessage = (e) => handleRealtimeEvent(JSON.parse(e.data));
 
