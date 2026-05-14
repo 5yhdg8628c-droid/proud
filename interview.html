@@ -463,18 +463,6 @@
           btn.style.display = 'none';
           document.getElementById('guideCard').style.display = 'none';
           setTimeout(() => {
-            dc.send(JSON.stringify({
-              type: 'session.update',
-              session: {
-                type: 'realtime',
-                turn_detection: {
-                  type: 'server_vad',
-                  threshold: 0.8,
-                  prefix_padding_ms: 500,
-                  silence_duration_ms: 1000
-                }
-              }
-            }));
             dc.send(JSON.stringify({ type: 'response.create' }));
           }, 2000);
         };
