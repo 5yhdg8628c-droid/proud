@@ -290,22 +290,74 @@
   </div>
 
   <script>
-    const QUESTIONS = [
-      "お名前",
-      "生年月日", "性別", "国籍",
-      "日本のビザの種類", "ビザの有効期限",
-      "運転免許の種類", "その他の資格", "経験のある仕事",
-      "合格した技能試験", "合格した日本語試験", "キャリアアップカード",
-      "身長", "体重", "靴のサイズ", "服のサイズ",
-      "就業状況",
-      "希望の業種", "希望の勤務地", "希望する仕事内容", "譲れない希望条件", "一時帰国の予定日",
-      "犯罪歴", "ビザの不許可歴", "強制送還・出国命令歴",
-      "配偶者", "宗教上の食事制限", "血液型", "趣味・特技",
-      "タトゥー", "喫煙", "飲酒",
-      "日本で働きたい理由", "特定技能2号の目標", "健康状態", "お金の使途"
-    ];
-    // index 0 = お名前（名前確認フロー）, index 1-35 = 質問1-35
+    const QUESTIONS_LANG = {
+      ja: ["お名前","生年月日","性別","国籍","日本のビザの種類","ビザの有効期限","運転免許の種類","その他の資格","経験のある仕事","合格した技能試験","合格した日本語試験","キャリアアップカード","身長","体重","靴のサイズ","服のサイズ","就業状況","希望の業種","希望の勤務地","希望する仕事内容","譲れない希望条件","一時帰国の予定日","犯罪歴","ビザの不許可歴","強制送還・出国命令歴","配偶者","宗教上の食事制限","血液型","趣味・特技","タトゥー","喫煙","飲酒","日本で働きたい理由","特定技能2号の目標","健康状態","お金の使途"],
+      en: ["Name","Date of Birth","Gender","Nationality","Japanese Visa Type","Visa Expiry","Driver's License","Other Certifications","Work Experience","Skills Test","Japanese Language Test","Career Up Card","Height","Weight","Shoe Size","Clothing Size","Employment Status","Preferred Industry","Preferred Location","Preferred Job Type","Must-have Conditions","Home Return Plans","Criminal Record","Visa Rejection History","Deportation History","Spouse","Dietary Restrictions","Blood Type","Hobbies & Skills","Tattoos","Smoking","Drinking","Reason for Working in Japan","Specified Skilled Worker Type 2","Health","Money Usage"],
+      vi: ["Tên","Ngày sinh","Giới tính","Quốc tịch","Loại visa Nhật","Hạn visa","Bằng lái xe","Chứng chỉ khác","Kinh nghiệm làm việc","Kỳ thi kỹ năng","Kỳ thi tiếng Nhật","Thẻ Career Up","Chiều cao","Cân nặng","Size giày","Size quần áo","Tình trạng việc làm","Ngành nghề mong muốn","Nơi làm việc mong muốn","Công việc mong muốn","Điều kiện bắt buộc","Kế hoạch về nước","Tiền án tiền sự","Lịch sử từ chối visa","Lịch sử trục xuất","Vợ/chồng","Hạn chế ăn uống","Nhóm máu","Sở thích & kỹ năng","Hình xăm","Hút thuốc","Uống rượu","Lý do muốn làm ở Nhật","Mục tiêu Kỹ năng đặc định 2","Sức khỏe","Sử dụng tiền"],
+      ne: ["नाम","जन्म मिति","लिङ्ग","राष्ट्रियता","जापानी भिसा प्रकार","भिसा म्याद","सवारी चालक अनुमतिपत्र","अन्य प्रमाणपत्र","काम अनुभव","सीप परीक्षण","जापानी परीक्षण","क्यारियर अप कार्ड","उचाइ","तौल","जुत्ताको साइज","लुगाको साइज","रोजगार अवस्था","इच्छित उद्योग","इच्छित स्थान","इच्छित काम","अनिवार्य सर्तहरू","स्वदेश फर्कने योजना","आपराधिक रेकर्ड","भिसा अस्वीकार इतिहास","निर्वासन इतिहास","जीवनसाथी","खाना प्रतिबन्ध","रक्त समूह","शौक र सीप","ट्याटु","धूम्रपान","मदिरापान","जापानमा काम गर्ने कारण","विशेष कुशल कामदार २","स्वास्थ्य","पैसाको उपयोग"],
+      id: ["Nama","Tanggal Lahir","Jenis Kelamin","Kewarganegaraan","Jenis Visa Jepang","Masa Berlaku Visa","SIM","Sertifikasi Lain","Pengalaman Kerja","Ujian Keterampilan","Ujian Bahasa Jepang","Career Up Card","Tinggi Badan","Berat Badan","Ukuran Sepatu","Ukuran Pakaian","Status Pekerjaan","Industri yang Diinginkan","Lokasi Kerja","Pekerjaan yang Diinginkan","Syarat Mutlak","Rencana Pulang","Catatan Kriminal","Riwayat Penolakan Visa","Riwayat Deportasi","Pasangan","Pantangan Makanan","Golongan Darah","Hobi & Keahlian","Tato","Merokok","Minum Alkohol","Alasan Bekerja di Jepang","Skilled Worker Tipe 2","Kesehatan","Penggunaan Uang"],
+    };
+    // index 0 = 名前確認, index 1-35 = 質問1-35
 
+    const UI_TEXT = {
+      ja: {
+        btnStart: '面談を開始する', btnTest: '確認画面を見る（テスト用）',
+        guideTitle: 'ご利用の前に',
+        guide: ['マイクへのアクセスを許可してください','AIが質問しますので、日本語でお答えください','話の途中で割り込んでOKです！自然に会話できます','聞き取れなかった場合は「もう一度お願いします」と言えばOKです','面談は約30〜40分程度です'],
+        statusInit: '面談を開始するにはボタンを押してください',
+        statusConnecting: '接続中...', statusSpeaking: 'AIが話しています...', statusListening: '聞いています...', statusPlease: 'お話しください...', statusProcessing: '処理中...', statusError: 'エラーが発生しました',
+        confirmHeader: '✅ 面談お疲れ様でした。内容を確認してください。',
+        btnSubmit: '送信して終了する',
+        nameLabel: 'お名前を教えてください',
+        endKeywords: ['面談はこれで終了', 'またいつでも話しかけて'],
+      },
+      en: {
+        btnStart: 'Start Interview', btnTest: 'View Confirmation (Test)',
+        guideTitle: 'Before you start',
+        guide: ['Allow microphone access','AI will ask questions, please answer in English','You can interrupt anytime','Say "please repeat" if you need something repeated','Interview takes about 30-40 minutes'],
+        statusInit: 'Press the button to start the interview',
+        statusConnecting: 'Connecting...', statusSpeaking: 'AI is speaking...', statusListening: 'Listening...', statusPlease: 'Please speak...', statusProcessing: 'Processing...', statusError: 'An error occurred',
+        confirmHeader: '✅ Interview complete. Please review your answers.',
+        btnSubmit: 'Submit and finish',
+        nameLabel: 'Please tell me your name',
+        endKeywords: ['The interview is now complete', 'Feel free to talk to me'],
+      },
+      vi: {
+        btnStart: 'Bắt đầu phỏng vấn', btnTest: 'Xem màn hình xác nhận (Thử nghiệm)',
+        guideTitle: 'Trước khi bắt đầu',
+        guide: ['Vui lòng cho phép truy cập micro','AI sẽ đặt câu hỏi, hãy trả lời bằng tiếng Việt','Bạn có thể ngắt lời bất cứ lúc nào','Nói "xin nhắc lại" nếu cần','Phỏng vấn kéo dài khoảng 30-40 phút'],
+        statusInit: 'Nhấn nút để bắt đầu phỏng vấn',
+        statusConnecting: 'Đang kết nối...', statusSpeaking: 'AI đang nói...', statusListening: 'Đang nghe...', statusPlease: 'Hãy nói...', statusProcessing: 'Đang xử lý...', statusError: 'Đã xảy ra lỗi',
+        confirmHeader: '✅ Phỏng vấn hoàn thành. Vui lòng xem lại câu trả lời.',
+        btnSubmit: 'Gửi và kết thúc',
+        nameLabel: 'Cho tôi biết tên của bạn',
+        endKeywords: ['Buổi phỏng vấn đã kết thúc', 'Hãy tự nhiên nói chuyện'],
+      },
+      ne: {
+        btnStart: 'अन्तर्वार्ता सुरु गर्नुहोस्', btnTest: 'पुष्टि स्क्रिन हेर्नुहोस् (परीक्षण)',
+        guideTitle: 'सुरु गर्नु अघि',
+        guide: ['माइक्रोफोन अनुमति दिनुहोस्','AI ले प्रश्न सोध्नेछ, नेपालीमा जवाफ दिनुहोस्','जुनसुकै बेला बाधा गर्न सकिन्छ','आवश्यक भएमा "फेरि भन्नुहोस्" भन्नुहोस्','अन्तर्वार्ता लगभग ३०-४० मिनेट लाग्छ'],
+        statusInit: 'अन्तर्वार्ता सुरु गर्न बटन थिच्नुहोस्',
+        statusConnecting: 'जोड्दैछ...', statusSpeaking: 'AI बोल्दैछ...', statusListening: 'सुन्दैछ...', statusPlease: 'कृपया बोल्नुहोस्...', statusProcessing: 'प्रशोधन गर्दैछ...', statusError: 'त्रुटि भयो',
+        confirmHeader: '✅ अन्तर्वार्ता पूर्ण भयो। कृपया आफ्ना उत्तरहरू जाँच गर्नुहोस्।',
+        btnSubmit: 'पेश गर्नुहोस् र समाप्त गर्नुहोस्',
+        nameLabel: 'तपाईंको नाम बताउनुहोस्',
+        endKeywords: ['अन्तर्वार्ता सकियो', 'कहिले पनि कुरा गर्न'],
+      },
+      id: {
+        btnStart: 'Mulai wawancara', btnTest: 'Lihat halaman konfirmasi (Tes)',
+        guideTitle: 'Sebelum mulai',
+        guide: ['Izinkan akses mikrofon','AI akan mengajukan pertanyaan, silakan jawab','Anda bisa menyela kapan saja','Katakan "tolong ulangi" jika perlu','Wawancara berlangsung sekitar 30-40 menit'],
+        statusInit: 'Tekan tombol untuk memulai wawancara',
+        statusConnecting: 'Menghubungkan...', statusSpeaking: 'AI sedang berbicara...', statusListening: 'Mendengarkan...', statusPlease: 'Silakan berbicara...', statusProcessing: 'Memproses...', statusError: 'Terjadi kesalahan',
+        confirmHeader: '✅ Wawancara selesai. Silakan tinjau jawaban Anda.',
+        btnSubmit: 'Kirim dan selesai',
+        nameLabel: 'Beritahu saya nama Anda',
+        endKeywords: ['Wawancara telah selesai', 'berbicara dengan saya kapan saja'],
+      },
+    };
+
+    let QUESTIONS = QUESTIONS_LANG['ja'];
     let answers = QUESTIONS.map(q => ({ question: q, answer: "" }));
     let currentQIndex = 0;
     let pc = null, dc = null, audioEl = null;
@@ -315,6 +367,17 @@
 
     function selectLanguage(lang) {
       selectedLanguage = lang;
+      const t = UI_TEXT[lang];
+      document.getElementById('btnStart').textContent = t.btnStart;
+      document.querySelector('.btn-test').textContent = t.btnTest;
+      document.querySelector('#guideCard h3').textContent = t.guideTitle;
+      const guideItems = document.querySelectorAll('#guideCard .guide-list li span:last-child');
+      t.guide.forEach((text, i) => { if (guideItems[i]) guideItems[i].textContent = text; });
+      document.getElementById('statusText').textContent = t.statusInit;
+      document.querySelector('.confirm-header').textContent = t.confirmHeader;
+      document.getElementById('btnSubmit').textContent = t.btnSubmit;
+      QUESTIONS = QUESTIONS_LANG[lang];
+      answers = QUESTIONS.map(q => ({ question: q, answer: "" }));
       document.getElementById('screenLang').style.display = 'none';
       document.getElementById('screenInterview').style.display = 'flex';
     }
@@ -345,7 +408,7 @@
       if (!badge) return;
       if (currentQIndex === 0) {
         badge.textContent = '名前確認';
-        label.textContent = 'お名前を教えてください';
+        label.textContent = UI_TEXT[selectedLanguage].nameLabel;
       } else {
         badge.textContent = '質問 ' + currentQIndex + ' / 35';
         label.textContent = QUESTIONS[currentQIndex];
@@ -434,7 +497,7 @@
     async function startInterview() {
       const btn = document.getElementById('btnStart');
       btn.disabled = true;
-      setStatus('接続中...', '');
+      setStatus(UI_TEXT[selectedLanguage].statusConnecting, '');
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         sessionId = generateSessionId();
@@ -458,7 +521,7 @@
         dc = pc.createDataChannel('oai-events');
         dc.onopen = () => {
           isConnected = true;
-          setStatus('AIが話しています...', 'speaking');
+          setStatus(UI_TEXT[selectedLanguage].statusSpeaking, 'speaking');
           setWaveState('ai-speaking');
           btn.style.display = 'none';
           document.getElementById('guideCard').style.display = 'none';
@@ -483,7 +546,7 @@
         console.error(err);
         showError('エラー: ' + err.message);
         btn.disabled = false;
-        setStatus('エラーが発生しました');
+        setStatus(UI_TEXT[selectedLanguage].statusError);
       }
     }
 
@@ -493,27 +556,27 @@
         case 'response.audio_transcript.delta':
           currentAiText += event.delta || '';
           document.getElementById('questionLabel').textContent = currentAiText;
-          setStatus('AIが話しています...', 'speaking');
+          setStatus(UI_TEXT[selectedLanguage].statusSpeaking, 'speaking');
           setWaveState('ai-speaking');
           break;
         case 'response.audio_transcript.done':
           if (currentAiText) {
             detectQuestionFromText(currentAiText);
-            if (currentAiText.includes('面談はこれで終了') || currentAiText.includes('またいつでも話しかけて')) {
+            if (UI_TEXT[selectedLanguage].endKeywords.some(kw => currentAiText.includes(kw))) {
               setTimeout(showConfirmationScreen, 2000);
             }
             currentAiText = '';
           }
-          setStatus('お話しください...', 'listening');
+          setStatus(UI_TEXT[selectedLanguage].statusPlease, 'listening');
           setWaveState('');
           break;
         case 'input_audio_buffer.speech_started':
           document.getElementById('questionLabel').textContent = '';
-          setStatus('聞いています...', 'listening');
+          setStatus(UI_TEXT[selectedLanguage].statusListening, 'listening');
           setWaveState('user-speaking');
           break;
         case 'input_audio_buffer.speech_stopped':
-          setStatus('処理中...', '');
+          setStatus(UI_TEXT[selectedLanguage].statusProcessing, '');
           setWaveState('');
           break;
         case 'conversation.item.input_audio_transcription.completed':
@@ -549,7 +612,7 @@
           }
           break;
         case 'response.done':
-          setStatus('お話しください...', 'listening');
+          setStatus(UI_TEXT[selectedLanguage].statusPlease, 'listening');
           break;
         case 'error':
           if (event.error?.code !== 'invalid_value') {
