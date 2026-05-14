@@ -462,9 +462,6 @@
           setWaveState('ai-speaking');
           btn.style.display = 'none';
           document.getElementById('guideCard').style.display = 'none';
-          setTimeout(() => {
-            dc.send(JSON.stringify({ type: 'response.create' }));
-          }, 2000);
         };
         dc.onmessage = (e) => handleRealtimeEvent(JSON.parse(e.data));
 
