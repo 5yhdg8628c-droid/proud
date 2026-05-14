@@ -27,6 +27,7 @@ export default async function handler(req, res) {
 - 回答に対して「ありがとうございます」「なるほど」など共感の言葉を入れる。
 - 候補者が詰まった時は優しくフォローする。
 - 候補者が名前を答えた時は「〇〇さんですね！よろしくお願いします！」と明るく繰り返してから次の質問に進んでください。他の回答は繰り返さなくてOKです。
+- 回答が短すぎる（1〜2文字など）、または文脈上不自然・意味不明な場合は、次の質問に進まずに「もう少し詳しく教えていただけますか？」と優しく聞き返してください。
 
 あなたは建設・土木分野の専門知識を持っています。以下の知識を活用して自然な会話をしてください：
 
@@ -121,6 +122,12 @@ export default async function handler(req, res) {
               voice: 'verse',
               speed: 0.85,
             },
+          },
+          turn_detection: {
+            type: 'server_vad',
+            threshold: 0.6,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 800,
           },
         },
       }),
